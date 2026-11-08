@@ -1,0 +1,20 @@
+{
+  "name": "suppercook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Suppercook — умный кулинарный помощник и социальная платформа для планирования питания и готовки",
+  "workspaces": [
+    "apps/api",
+    "apps/mobile"
+  ],
+  "scripts": {
+    "api": "npm run start:dev --workspace @suppercook/api",
+    "mobile": "npm run start --workspace @suppercook/mobile",
+    "build:api": "npm run build --workspace @suppercook/api",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

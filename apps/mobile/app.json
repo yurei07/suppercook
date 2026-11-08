@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Suppercook",
+    "slug": "suppercook",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#FF6B35"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.suppercook.app"
+    },
+    "android": {
+      "package": "com.suppercook.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FF6B35"
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Приложение использует фото, чтобы распознать продукты в вашем холодильнике."
+        }
+      ]
+    ]
+  }
+}
