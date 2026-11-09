@@ -136,7 +136,7 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 - The planner is demo content; there's no "generate a balanced week" logic yet.
 - The recipe catalog is small and hand-written.
 - No CI yet. Tests are run locally.
-- The app has only been tested on Linux and a clean Android device, not on iOS hardware.
+- I've only run the app on Linux so far. The Android APK is built but hasn't been tested on a physical device yet.
 
 ## Next
 
