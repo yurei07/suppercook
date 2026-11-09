@@ -401,6 +401,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterHighProtein => 'High protein';
 
   @override
+  String get loadingRecipes => 'Loading recipes…';
+
+  @override
+  String get liveBadge => 'Live API';
+
+  @override
+  String get demoBadge => 'Demo data';
+
+  @override
   String get noRecipesTitle => 'No recipes yet';
 
   @override
@@ -584,6 +593,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageLabel => 'Language';
+
+  @override
+  String get dataSourceLabel => 'Data source';
+
+  @override
+  String get dataSourceDemo => 'Demo data';
+
+  @override
+  String get dataSourceApi => 'Live API';
+
+  @override
+  String get dataSourceHint =>
+      'Demo data works offline. Live API talks to the NestJS backend on your network.';
+
+  @override
+  String get dataSourceDemoHint => 'Built-in recipes; no backend needed.';
+
+  @override
+  String get dataSourceApiHint =>
+      'Recipes and photo recognition from the NestJS API.';
+
+  @override
+  String get apiEnabled => 'Live API enabled';
+
+  @override
+  String get apiUnreachable =>
+      'Can\'t reach the API. Check that the backend is running.';
+
+  @override
+  String get apiSyncFailed =>
+      'Couldn\'t sync with the API — showing local data.';
 
   @override
   String get dietLabel => 'Diet';

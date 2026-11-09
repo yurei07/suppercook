@@ -12,6 +12,7 @@ import '../../../data/mock_data.dart';
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/localized_text.dart';
 import '../../../data/providers/pantry_provider.dart';
+import '../../../data/providers/scan_result_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_cards.dart';
@@ -33,7 +34,9 @@ class _ScanResultsScreenState extends ConsumerState<ScanResultsScreen> {
   @override
   void initState() {
     super.initState();
-    _ingredients = List.of(MockData.scanDetected);
+    _ingredients = List.of(
+      ref.read(scanResultProvider) ?? MockData.scanDetected,
+    );
     _selected = _ingredients.map((item) => item.id).toSet();
   }
 

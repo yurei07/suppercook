@@ -28,6 +28,16 @@ Output:
 build/app/outputs/flutter-apk/app-release.apk
 ```
 
+If you want the APK to talk to a local API on your machine, pass your LAN
+address at build time:
+
+```bash
+flutter build apk --release \
+  --dart-define=SUPPERCOOK_API_URL=http://192.168.1.20:3000
+```
+
+The app allows cleartext HTTP for local development. Use HTTPS before shipping.
+
 The release build is currently signed with the **debug keystore** so it can be
 installed for testing. Before publishing to Google Play, configure a private
 release keystore in `android/app/build.gradle.kts`.

@@ -302,6 +302,27 @@ abstract final class MockData {
     unit: 'tbsp',
     category: IngredientCategory.pantry,
   );
+  static const cheese = Ingredient(
+    id: 'cheese',
+    name: LocalizedText('Cheese', 'Käse'),
+    amount: 100,
+    unit: 'g',
+    category: IngredientCategory.dairy,
+  );
+  static const potato = Ingredient(
+    id: 'potato',
+    name: LocalizedText('Potatoes', 'Kartoffeln'),
+    amount: 300,
+    unit: 'g',
+    category: IngredientCategory.produce,
+  );
+  static const vegetableOil = Ingredient(
+    id: 'vegetable_oil',
+    name: LocalizedText('Vegetable oil', 'Pflanzenöl'),
+    amount: 100,
+    unit: 'ml',
+    category: IngredientCategory.pantry,
+  );
 
   // ---------------------------------------------------------------------------
   // Default state
@@ -763,4 +784,35 @@ abstract final class MockData {
       ],
     ),
   ];
+
+  /// Lookup used when mapping API recipe/inventory names to the local
+  /// ingredient catalog. This is what keeps API and demo pantry IDs aligned.
+  static final Map<String, Ingredient> _ingredientIndex =
+      _buildIngredientIndex();
+
+  static Map<String, Ingredient> _buildIngredientIndex() {
+    final index = <String, Ingredient>{};
+
+    void register(Ingredient ingredient) {
+      index[ingredient.name.en.toLowerCase()] = ingredient;
+      index[ingredient.name.de.toLowerCase()] = ingredient;
+    }
+
+    for (final item in pantryItems) {
+      register(item);
+    }
+    for (final recipe in recipes) {
+      for (final ingredient in recipe.ingredients) {
+        register(ingredient);
+      }
+    }
+    register(cheese);
+    register(potato);
+    register(vegetableOil);
+    return index;
+  }
+
+  static Ingredient? findIngredient(String name) {
+    return _ingredientIndex[name.trim().toLowerCase()];
+  }
 }

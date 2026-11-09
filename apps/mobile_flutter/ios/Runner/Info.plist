@@ -20,6 +20,11 @@
 	<string>Suppercook uses the camera to recognize the ingredients you have.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Suppercook uses your photos to recognize ingredients and suggest recipes.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

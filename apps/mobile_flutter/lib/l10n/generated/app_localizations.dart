@@ -776,6 +776,24 @@ abstract class AppLocalizations {
   /// **'High protein'**
   String get filterHighProtein;
 
+  /// No description provided for @loadingRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading recipes…'**
+  String get loadingRecipes;
+
+  /// No description provided for @liveBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Live API'**
+  String get liveBadge;
+
+  /// No description provided for @demoBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo data'**
+  String get demoBadge;
+
   /// No description provided for @noRecipesTitle.
   ///
   /// In en, this message translates to:
@@ -1135,6 +1153,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get languageLabel;
+
+  /// No description provided for @dataSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Data source'**
+  String get dataSourceLabel;
+
+  /// No description provided for @dataSourceDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo data'**
+  String get dataSourceDemo;
+
+  /// No description provided for @dataSourceApi.
+  ///
+  /// In en, this message translates to:
+  /// **'Live API'**
+  String get dataSourceApi;
+
+  /// No description provided for @dataSourceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo data works offline. Live API talks to the NestJS backend on your network.'**
+  String get dataSourceHint;
+
+  /// No description provided for @dataSourceDemoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in recipes; no backend needed.'**
+  String get dataSourceDemoHint;
+
+  /// No description provided for @dataSourceApiHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes and photo recognition from the NestJS API.'**
+  String get dataSourceApiHint;
+
+  /// No description provided for @apiEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Live API enabled'**
+  String get apiEnabled;
+
+  /// No description provided for @apiUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the API. Check that the backend is running.'**
+  String get apiUnreachable;
+
+  /// No description provided for @apiSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sync with the API — showing local data.'**
+  String get apiSyncFailed;
 
   /// No description provided for @dietLabel.
   ///

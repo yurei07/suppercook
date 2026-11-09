@@ -8,8 +8,11 @@ import '../../../app/theme/app_typography.dart';
 import '../../../core/app_providers.dart';
 import '../../../core/extensions.dart';
 import '../../../core/locale_controller.dart';
+import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/pantry_provider.dart';
 import '../../../data/providers/planner_provider.dart';
+import '../../../data/providers/recipe_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../data/providers/stats_provider.dart';
 import '../../../data/providers/user_provider.dart';
@@ -98,6 +101,78 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showDataSourceSheet() {
+    final current = ref.read(dataSourceProvider);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        final l10n = sheetContext.l10n;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.dataSourceLabel,
+                style: Theme.of(sheetContext).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.dataSourceHint,
+                style: Theme.of(sheetContext).textTheme.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _DataSourceOption(
+                icon: Icons.storage_rounded,
+                title: l10n.dataSourceDemo,
+                subtitle: l10n.dataSourceDemoHint,
+                selected: current == DataSource.demo,
+                onTap: () => _selectSource(DataSource.demo, sheetContext),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _DataSourceOption(
+                icon: Icons.cloud_done_outlined,
+                title: l10n.dataSourceApi,
+                subtitle: l10n.dataSourceApiHint,
+                selected: current == DataSource.api,
+                onTap: () => _selectSource(DataSource.api, sheetContext),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectSource(
+    DataSource source,
+    BuildContext sheetContext,
+  ) async {
+    Navigator.of(sheetContext).pop();
+    await ref.read(dataSourceProvider.notifier).set(source);
+    ref.invalidate(suggestionsFeedProvider);
+    if (source == DataSource.demo) {
+      ref.read(remoteRecipesProvider.notifier).clear();
+      return;
+    }
+
+    final reachable = await ref.read(apiRepositoryProvider).ping();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          reachable ? context.l10n.apiEnabled : context.l10n.apiUnreachable,
+        ),
+      ),
+    );
+  }
+
   Future<void> _showAbout() async {
     final l10n = context.l10n;
     await showDialog<void>(
@@ -174,6 +249,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ref.invalidate(plannerProvider);
     ref.invalidate(userProfileProvider);
     ref.invalidate(recipesCookedProvider);
+    ref.invalidate(dataSourceProvider);
+    ref.invalidate(suggestionsFeedProvider);
+    ref.read(remoteRecipesProvider.notifier).clear();
     if (!mounted) return;
     context.go('/language');
   }
@@ -184,6 +262,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = ref.watch(userProfileProvider);
     final cooked = ref.watch(recipesCookedProvider);
     final locale = ref.watch(localeProvider);
+    final source = ref.watch(dataSourceProvider);
     final initial = user.name.trim().isEmpty
         ? 'A'
         : user.name.trim().characters.first.toUpperCase();
@@ -282,6 +361,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           label: l10n.languageLabel,
                           value: locale.languageCode.toUpperCase(),
                           onTap: _showLanguageSheet,
+                        ),
+                        const Divider(height: 1),
+                        AppInfoRow(
+                          icon: Icons.cloud_outlined,
+                          label: l10n.dataSourceLabel,
+                          value: source == DataSource.api
+                              ? l10n.dataSourceApi
+                              : l10n.dataSourceDemo,
+                          onTap: _showDataSourceSheet,
                         ),
                         const Divider(height: 1),
                         AppInfoRow(
@@ -407,6 +495,83 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
+      ),
+    );
+  }
+}
+
+class _DataSourceOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _DataSourceOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.accentSoft : AppColors.surfaceElevated,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(
+              color: selected ? AppColors.accent : AppColors.borderSoft,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: selected ? AppColors.accent : AppColors.surfaceHigh,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: selected ? Colors.black : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                const Icon(
+                  Icons.check_rounded,
+                  color: AppColors.accent,
+                  size: 20,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

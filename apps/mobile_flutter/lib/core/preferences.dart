@@ -7,6 +7,7 @@ const allergiesKey = 'user_allergies';
 const goalKey = 'user_goal';
 const calorieTargetKey = 'user_calorie_target';
 const recipesCookedKey = 'recipes_cooked';
+const dataSourceKey = 'data_source';
 
 bool isOnboardingComplete(SharedPreferences prefs) =>
     prefs.getBool(onboardingCompleteKey) ?? false;

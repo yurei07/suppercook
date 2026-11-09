@@ -1,9 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  // Photo recognition sends base64 images, so the default 100 KB JSON limit
+  // is not enough.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(json({ limit: '20mb' }));
+  app.use(urlencoded({ extended: true, limit: '20mb' }));
 
   // CORS — мобильное приложение ходит с эмулятора/устройства на другой origin
   app.enableCors({ origin: true });

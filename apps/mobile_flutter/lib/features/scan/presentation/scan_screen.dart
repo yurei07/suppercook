@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/extensions.dart';
+import '../../../core/locale_controller.dart';
+import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/data_source_provider.dart';
+import '../../../data/providers/scan_result_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_cards.dart';
@@ -45,14 +50,54 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   }
 
   Future<void> _analyze(String path) async {
+    final l10n = context.l10n;
+    final source = ref.read(dataSourceProvider);
     setState(() {
       _imagePath = path;
       _analyzing = true;
     });
-    await Future<void>.delayed(const Duration(milliseconds: 1800));
+
+    var fellBack = false;
+    try {
+      if (source == DataSource.api) {
+        final items = await ref.read(apiRepositoryProvider).recognize(
+          bytes: await _loadBytes(path),
+          mimeType: _mimeType(path),
+          locale: ref.read(localeProvider),
+        );
+        ref.read(scanResultProvider.notifier).set(items);
+      } else {
+        ref.read(scanResultProvider.notifier).clear();
+        await Future<void>.delayed(const Duration(milliseconds: 1800));
+      }
+    } catch (_) {
+      fellBack = true;
+      ref.read(scanResultProvider.notifier).clear();
+      if (mounted) _showMessage(l10n.apiUnreachable);
+    }
+
     if (!mounted) return;
     setState(() => _analyzing = false);
+    if (fellBack) {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    }
+    if (!mounted) return;
     await context.push('/scan/results', extra: path);
+  }
+
+  Future<Uint8List> _loadBytes(String path) async {
+    if (path.startsWith('assets/')) {
+      final data = await rootBundle.load(path);
+      return data.buffer.asUint8List();
+    }
+    return File(path).readAsBytes();
+  }
+
+  String _mimeType(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    return 'image/jpeg';
   }
 
   void _showMessage(String message) {

@@ -20,6 +20,7 @@ Cross-platform Suppercook client: iOS, Android and Linux desktop from a single F
 - **Responsive layout**: bottom navigation on phones, side rail on Linux (≥ 900 px).
 - **Localization**: EN/DE with instant switching, no restart.
 - **Local persistence**: pantry, shopping list, weekly plan and profile settings survive a restart.
+- **Live API mode**: recipe suggestions and photo recognition can use the NestJS backend (Profile → Data source).
 
 ## Run
 
@@ -43,6 +44,33 @@ Visual QA shortcut — boot straight into any route:
 ```bash
 ./build/linux/x64/release/bundle/suppercook --route=/recipe/salmon_bowl
 ```
+
+## Live API mode
+
+The app defaults to the built-in demo catalog. To use the NestJS API:
+
+```bash
+cd ../api
+npm install
+npm run api          # http://localhost:3000
+```
+
+Then in the app: **Profile → Data source → Live API**.
+
+The default base URL is `http://localhost:3000` on Linux and `http://10.0.2.2:3000` on the Android emulator. Point a physical device at your machine with:
+
+```bash
+flutter run -d android \
+  --dart-define=SUPPERCOOK_API_URL=http://192.168.1.20:3000
+```
+
+For dev builds you can also force the mode without touching the UI:
+
+```bash
+flutter run -d linux --dart-define=SUPPERCOOK_DATA_SOURCE=api
+```
+
+Current scope: recipe suggestions and photo recognition use the API. The pantry is synced one way (local → backend) before generation; the shopping list and planner stay local. The app allows cleartext HTTP on Android for local development.
 
 ## Architecture
 
@@ -88,8 +116,9 @@ Add a language: create `app_<code>.arb`, add the `Locale` to `supportedAppLocale
 1. **AI recognition** returns a fixed ingredient set (`MockData.scanDetected`) after a photo is selected.
 2. **AI chat** answers from a template based on the top pantry recipe.
 3. **Auth** is a stub; no data leaves the device.
-4. **State is local-first**: pantry, shopping list, weekly plan and profile prefs persist in SharedPreferences. There is no server sync yet.
+4. **State is local-first**: pantry, shopping list, weekly plan and profile prefs persist in SharedPreferences. Recipe suggestions and recognition can come from the API in Live API mode; shopping and planner sync are not implemented yet.
 5. **Camera on Linux** is unavailable — file upload is used instead.
+6. **The backend's AI is a mock** unless `AI_PROVIDER=openai` and an API key are configured.
 
 Next step: connect `apps/api` (NestJS) by replacing `MockData` with a repository layer, adding `dio`, auth tokens and the real `/inventory`, `/recipes/suggest`, `/shopping` endpoints.
 
@@ -100,7 +129,7 @@ flutter analyze
 flutter test
 ```
 
-Tests cover the core localization contract (start in English → switch to German live → persist the choice) and local persistence of the pantry, shopping list and weekly planner across provider restarts.
+Eight tests cover the core localization contract (start in English → switch to German live → persist the choice), local persistence across provider restarts, API DTO mapping, and the Demo/Live API preference.
 
 ## Assets
 

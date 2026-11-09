@@ -19,15 +19,17 @@ What works today:
 - scan flow with camera/gallery on mobile and file upload on desktop
 - recipe list, recipe detail, cooking mode and per-serving macros
 - EN/DE localization with instant switching
-- mock ingredient recognition and mock AI chat
+- Live API mode for recipe suggestions and photo recognition (Profile → Data source)
+- mock ingredient recognition and mock AI chat in demo mode
 
 What's still fake or missing:
 
-- photo recognition returns a fixed demo result
+- photo recognition returns a fixed demo result (Live API or not — the backend uses the mock provider without an OpenAI key)
 - the AI chat answers from a template
 - login is a stub, there are no real accounts
 - the API keeps everything in memory; restarting it clears the data
-- the weekly plan is local only and isn't synced anywhere
+- Live API only covers recipes and photo recognition so far; the shopping list and planner are still local
+- pantry sync with the API is one-way (local → backend) before recipe generation
 - community features aren't started
 
 ## Try the Android build
@@ -67,6 +69,13 @@ npm run api
 ```
 
 It starts on `http://localhost:3000`. No OpenAI key is required; without one it uses the mock provider. If you want real generation, copy `apps/api/.env.example` to `.env`, set `AI_PROVIDER=openai` and add your key.
+
+Then open the app, go to **Profile → Data source → Live API**. Recipe suggestions and photo recognition will go through the backend. The Android emulator reaches your machine at `10.0.2.2`; for a physical phone build with your LAN address:
+
+```bash
+flutter build apk --release \
+  --dart-define=SUPPERCOOK_API_URL=http://192.168.1.20:3000
+```
 
 Quick check:
 
@@ -135,12 +144,14 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 - The Linux build has no camera support, so scanning means uploading a file.
 - The planner is demo content; there's no "generate a balanced week" logic yet.
 - The recipe catalog is small and hand-written.
+- Live API mode uses plain HTTP for local development; production needs HTTPS and a proper network security config.
 - No CI yet. Tests are run locally.
 - I've only run the app on Linux so far. The Android APK is built but hasn't been tested on a physical device yet.
 
 ## Next
 
-- [ ] Replace the Flutter mock data with an API repository (`dio`, loading/error states, offline fallback).
+- [x] API client/repository for recipes and photo recognition, with a Demo / Live API switch.
+- [ ] Sync the shopping list and planner with the API, and add proper offline handling.
 - [ ] Move the API from in-memory maps to PostgreSQL + Prisma.
 - [ ] Add real authentication and remove `x-user-id`.
 - [ ] Connect OpenAI vision and generation with budget limits.
