@@ -1,0 +1,321 @@
+{
+  "@@locale": "en",
+
+  "appName": "Suppercook",
+  "continueLabel": "Continue",
+  "skip": "Skip",
+  "back": "Back",
+  "close": "Close",
+  "cancel": "Cancel",
+  "save": "Save",
+  "done": "Done",
+  "next": "Next",
+  "search": "Search",
+  "seeAll": "See all",
+  "retry": "Try again",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "comingSoon": "Coming soon",
+  "comingSoonBody": "This feature is coming in the next iteration.",
+  "add": "Add",
+  "remove": "Remove",
+  "apply": "Apply",
+  "all": "All",
+  "confirm": "Confirm",
+  "minShort": "{minutes} min",
+  "@minShort": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "kcalShort": "{value} kcal",
+  "@kcalShort": {
+    "placeholders": {
+      "value": { "type": "int" }
+    }
+  },
+  "servingsShort": "{count, plural, =1{1 serving} other{{count} servings}}",
+  "@servingsShort": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "matchPercent": "{percent}% match",
+  "@matchPercent": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "missingLabel": "{count, plural, =0{Nothing missing} =1{1 missing} other{{count} missing}}",
+  "@missingLabel": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "selectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "viewRecipe": "View recipe",
+  "perServing": "per serving",
+  "searchRecipes": "Search recipes",
+
+  "languageTitle": "Choose your language",
+  "languageSubtitle": "You can change it anytime in your profile.",
+  "languagePreview": "Tonight we're cooking something amazing.",
+  "languageEnglish": "English",
+  "languageGerman": "Deutsch",
+  "onboardingTitle1": "Cook with what you have",
+  "onboardingBody1": "Snap a photo of your fridge or pantry and get recipes that fit your ingredients.",
+  "onboardingTitle2": "Your smart shopping list",
+  "onboardingBody2": "We add only what's missing — no duplicate buying, no waste.",
+  "onboardingTitle3": "Plan your week in minutes",
+  "onboardingBody3": "Balanced meals, calories and macros tailored to your goals.",
+  "getStarted": "Get started",
+  "onboardingSkip": "Skip intro",
+
+  "authTitle": "Welcome to Suppercook",
+  "authSubtitle": "Your kitchen, smarter.",
+  "continueWithApple": "Continue with Apple",
+  "continueWithGoogle": "Continue with Google",
+  "continueWithEmail": "Continue with email",
+  "continueAsGuest": "Continue as guest",
+  "authTerms": "By continuing you agree to our Terms and Privacy Policy.",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "signIn": "Sign in",
+
+  "setupTitle": "Let's personalize your kitchen",
+  "setupSubtitle": "This helps us suggest meals that actually fit you.",
+  "nameQuestion": "What should we call you?",
+  "nameHint": "Your name",
+  "orLabel": "or",
+  "dietTitle": "What do you eat?",
+  "dietOmnivore": "Everything",
+  "dietVegetarian": "Vegetarian",
+  "dietVegan": "Vegan",
+  "dietPescatarian": "Pescatarian",
+  "dietGlutenFree": "Gluten-free",
+  "allergiesTitle": "Any allergies?",
+  "allergyNone": "None",
+  "allergyNuts": "Nuts",
+  "allergyDairy": "Dairy",
+  "allergyEggs": "Eggs",
+  "allergyGluten": "Gluten",
+  "allergySoy": "Soy",
+  "allergyShellfish": "Shellfish",
+  "goalTitle": "Your goal",
+  "goalLose": "Lose weight",
+  "goalMaintain": "Maintain",
+  "goalGain": "Build muscle",
+  "caloriesTitle": "Daily calorie target",
+  "caloriesValue": "{value} kcal",
+  "@caloriesValue": {
+    "placeholders": {
+      "value": { "type": "int" }
+    }
+  },
+  "finishSetup": "Start cooking",
+  "setupHint": "You can change all of this later.",
+
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeSubtitle": "What are we cooking today?",
+  "scanIngredients": "Scan ingredients",
+  "quickScan": "Scan",
+  "quickPantry": "Pantry",
+  "quickPlanner": "Planner",
+  "quickChat": "AI chef",
+  "recommended": "Recommended for you",
+  "fromPantry": "From your pantry",
+  "noPantryYet": "Add ingredients to see personalized recipes",
+  "addProducts": "Add products",
+  "chefTip": "Chef's tip",
+
+  "scanTitle": "Scan your ingredients",
+  "scanSubtitle": "Point the camera at your fridge shelf or upload a photo.",
+  "takePhoto": "Take a photo",
+  "uploadPhoto": "Upload photo",
+  "useSample": "Use sample photo",
+  "analyzing": "Analyzing your ingredients…",
+  "analyzingHint": "Our AI is identifying what's on the photo.",
+  "detectedTitle": "We found {count} ingredients",
+  "@detectedTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "detectedSubtitle": "Check the list and edit anything that's wrong.",
+  "addIngredient": "Add ingredient",
+  "ingredientName": "Ingredient name",
+  "findRecipes": "Find recipes",
+  "scanError": "Couldn't analyze the photo. Try again or add ingredients manually.",
+  "cameraUnavailable": "Camera is not available on this device. Upload a photo instead.",
+
+  "suggestionsTitle": "Recipes for you",
+  "suggestionsSubtitle": "{count} ideas from your ingredients",
+  "@suggestionsSubtitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "filterAll": "All",
+  "filterQuick": "Under 20 min",
+  "filterVegan": "Vegan",
+  "filterHighProtein": "High protein",
+  "noRecipesTitle": "No recipes yet",
+  "noRecipesBody": "Add a few more ingredients and try again.",
+  "matchLabel": "match",
+  "noMissing": "You have everything",
+
+  "ingredientsTitle": "Ingredients",
+  "stepsTitle": "Steps",
+  "youHave": "You have",
+  "youNeed": "You need",
+  "nutritionTitle": "Nutrition per serving",
+  "protein": "Protein",
+  "carbs": "Carbs",
+  "fat": "Fat",
+  "calories": "Calories",
+  "startCooking": "Start cooking",
+  "addMissingToList": "Add missing to list",
+  "addedToList": "Added to your shopping list",
+  "servingsLabel": "Servings",
+  "difficultyEasy": "Easy",
+  "difficultyMedium": "Medium",
+  "difficultyHard": "Hard",
+  "recipeNotFound": "Recipe not found",
+
+  "stepOf": "Step {current} of {total}",
+  "@stepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "timerLabel": "Timer",
+  "startTimer": "Start timer",
+  "pauseTimer": "Pause",
+  "nextStep": "Next step",
+  "previousStep": "Back",
+  "finishCooking": "Finish cooking",
+  "cookingDoneTitle": "Enjoy your meal!",
+  "cookingDoneBody": "Bon appétit! Your shopping list has been updated.",
+  "ratePrompt": "How did it turn out?",
+  "backToHome": "Back to home",
+  "timerDone": "Time's up!",
+
+  "shoppingTitle": "Shopping list",
+  "shoppingProgress": "{checked} of {total} bought",
+  "@shoppingProgress": {
+    "placeholders": {
+      "checked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "shoppingEmpty": "Your list is empty",
+  "shoppingEmptyBody": "Add missing ingredients from any recipe.",
+  "categoryProduce": "Produce",
+  "categoryDairy": "Dairy & eggs",
+  "categoryPantry": "Pantry",
+  "categoryOther": "Other",
+  "alreadyAtHome": "Already at home",
+  "clearChecked": "Clear bought",
+  "addItemTitle": "Add item",
+  "itemName": "Item name",
+  "addToList": "Add to list",
+  "shoppingAtHomeHint": "These items are already in your pantry",
+  "noItems": "No items",
+
+  "plannerTitle": "Meal planner",
+  "plannerSubtitle": "Your week at a glance",
+  "breakfast": "Breakfast",
+  "lunch": "Lunch",
+  "dinner": "Dinner",
+  "addMeal": "Add meal",
+  "generatePlan": "Generate plan",
+  "planGenerated": "Your week is planned",
+  "today": "Today",
+
+  "profileTitle": "Profile",
+  "profileSubtitle": "Preferences and account",
+  "languageLabel": "Language",
+  "dietLabel": "Diet",
+  "allergiesLabel": "Allergies",
+  "goalLabel": "Goal",
+  "notificationsLabel": "Notifications",
+  "aboutLabel": "About Suppercook",
+  "aboutBody": "Suppercook is your smart kitchen companion. It turns the ingredients you already have into recipes, plans and a shopping list that never buys twice.",
+  "resetDemo": "Reset demo data",
+  "resetDemoBody": "This clears your pantry, shopping list and onboarding state.",
+  "resetDialogTitle": "Reset demo?",
+  "signOut": "Sign out",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "recipesCooked": "Recipes cooked",
+  "savedRecipes": "Saved recipes",
+  "settingsSection": "Preferences",
+  "accountSection": "Account",
+  "languageChanged": "Language updated",
+
+  "pantryTitle": "My pantry",
+  "pantrySubtitle": "{count, plural, =1{1 item at home} other{{count} items at home}}",
+  "@pantrySubtitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "pantryEmpty": "Your pantry is empty",
+  "pantryEmptyBody": "Scan your fridge or add items manually.",
+  "addProduct": "Add product",
+  "productName": "Product name",
+  "deleteItem": "Delete",
+  "addToPantry": "Add to pantry",
+  "pantryUpdated": "Pantry updated",
+  "emptyPantryCta": "Scan products",
+
+  "chatTitle": "AI chef",
+  "chatSubtitle": "Cook with what you have",
+  "chatGreeting": "Hi! Tell me what's in your fridge, or ask for a recipe. I'll only use ingredients you have.",
+  "chatHint": "Ask about a recipe…",
+  "chatSuggestion1": "What can I cook with salmon?",
+  "chatSuggestion2": "High-protein dinner ideas",
+  "chatSuggestion3": "Quick vegan lunch",
+  "chatTyping": "Suppercook is thinking…",
+  "chatMockReply": "Here's an idea: {title}. It takes about {minutes} minutes and uses {ingredients}. Want the full recipe?",
+  "@chatMockReply": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "minutes": { "type": "int" },
+      "ingredients": { "type": "String" }
+    }
+  },
+  "chatSend": "Send",
+
+  "navHome": "Home",
+  "navPlanner": "Planner",
+  "navScan": "Scan",
+  "navShopping": "Shopping",
+  "navProfile": "Profile"
+}

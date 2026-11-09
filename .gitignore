@@ -35,6 +35,6 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Native
-android/
-ios/
+# Native (legacy Expo app only — Flutter platform folders must be tracked)
+apps/mobile/android/
+apps/mobile/ios/

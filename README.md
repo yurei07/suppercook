@@ -1,159 +1,240 @@
 # 🍲 Suppercook
 
-Умный кулинарный помощник: распознаёт продукты на фото, предлагает рецепты из того, что есть в холодильнике, и сам составляет список покупок.
+**Cook with what you already have.**
 
-## Что уже работает (MVP-ядро)
+Suppercook is a cross-platform smart cooking assistant and social kitchen. Photograph the ingredients in your fridge, get recipes that actually fit your pantry, plan your week, and generate a shopping list that buys only what is missing.
 
-| Функция | Статус | Как проверить |
+![Suppercook home screen](apps/mobile_flutter/docs/screenshots/home.png)
+
+## What works today
+
+| Area | Status | Details |
 |---|---|---|
-| Инвентарь продуктов | ✅ | `POST /inventory` — добавление, объединение дублей, удаление |
-| Распознавание фото | ✅ (mock) | `POST /inventory/recognize` — возвращает распознанные продукты |
-| AI-генерация рецептов | ✅ (mock) | `POST /recipes/suggest` — 3 рецепта с расчётом нехватки |
-| Умный список покупок | ✅ | `POST /shopping/from-recipe` — добавляет **только то, чего не хватает** |
-| Режим готовки | ✅ | Мобильное приложение, пошаговые инструкции |
-| КБЖУ в рецептах | ✅ | Поле `nutrition` в ответе |
-| Недельное планирование | ⏳ v1.2 | — |
-| Сообщество и чаты | ⏳ v2.0 | — |
+| Flutter client (iOS / Android / Linux) | ✅ | Onboarding, pantry, scan flow, recipe suggestions, cooking mode, shopping list, weekly planner, AI chat UI, profile |
+| English / German localization | ✅ | Live language switching without restart, ARB-based, localized API content model |
+| Premium dark design system | ✅ | Tokens, serif + sans typography, reusable card/button/badge components |
+| Ingredient inventory API | ✅ | Add, merge duplicates, update, delete — `apps/api` |
+| Photo recognition | ✅ mock | Returns a realistic ingredient set; OpenAI vision can be enabled |
+| AI recipe generation | ✅ mock | 3 recipes with missing-ingredient calculation; OpenAI can be enabled |
+| Smart shopping list | ✅ | Adds only what is missing from the recipe, with deduplication |
+| Nutrition (calories / macros) | ✅ | Per-serving values in every recipe response |
+| Weekly planning | ⏳ | UI is ready; persistence and API integration are next |
+| Community / chat | ⏳ | Chat UI with mock AI replies; real-time community is post-MVP |
 
-**Важно про AI:** сейчас работает **mock-провайдер** — он не требует API-ключа и возвращает осмысленные данные. Чтобы подключить настоящий GPT, см. раздел «Подключение OpenAI».
+> **Important:** the Flutter client currently runs on local demo data. The NestJS API is functional and can be connected next. See [Roadmap](#roadmap).
 
-## Структура проекта
+## Monorepo layout
 
 ```
 suppercook/
 ├── apps/
-│   ├── api/                  # Backend: NestJS + TypeScript
+│   ├── api/                  # NestJS + TypeScript backend
 │   │   └── src/
-│   │       ├── ai/           # AI-слой (провайдеры, схемы zod, промпты)
-│   │       ├── inventory/    # Инвентарь пользователя
-│   │       ├── recipes/      # Генерация и расчёт рецептов
-│   │       ├── shopping/     # Умный список покупок
-│   │       └── common/       # Доменные типы, единицы измерения
-│   └── mobile/               # Frontend: React Native + Expo
-│       └── src/
-│           ├── api/          # Клиент API
-│           └── screens/      # 4 экрана MVP
-├── docs/                     # Продуктовая документация
-└── package.json              # npm workspaces
+│   │       ├── ai/           # AI providers, zod schemas, prompts
+│   │       ├── inventory/    # User pantry
+│   │       ├── recipes/      # Generation + missing-ingredient logic
+│   │       ├── shopping/     # Smart shopping list
+│   │       └── common/       # Domain types, units
+│   ├── mobile_flutter/       # ✅ Active client: Flutter (iOS, Android, Linux)
+│   │   └── lib/
+│   │       ├── app/          # Theme, router, adaptive shell
+│   │       ├── features/     # Screens by feature
+│   │       ├── data/         # Models, Riverpod providers, demo data
+│   │       ├── shared/       # Design-system widgets
+│   │       └── l10n/         # ARB files EN/DE
+│   └── mobile/               # First MVP: React Native + Expo (legacy)
+├── docs/                     # Product docs (Russian)
+└── package.json              # npm workspaces for API + legacy client
 ```
 
-## Быстрый старт
+## Tech stack
 
-### 1. Установка зависимостей
+**Client**
+- Flutter 3.47 / Dart 3.13 — one codebase for iOS, Android and Linux desktop
+- Riverpod 3 for state, `go_router` 18 for navigation
+- `shared_preferences` for local settings, `image_picker` for camera/gallery
+- ARB localization (`flutter_localizations` + `intl`) with runtime locale switching
+- Bundled **DM Serif Display** (editorial headings) and **Inter** (UI)
+
+**Backend**
+- NestJS + TypeScript
+- class-validator + zod for request and AI-output validation
+- Jest for tests
+- In-memory storage for the MVP (PostgreSQL + Prisma is the next step)
+
+**AI**
+- OpenAI multimodal API with automatic **mock fallback** when no key is configured
+- Server-side allergen filtering (the model cannot bypass it)
+- Missing ingredients are computed in code, not trusted to the model
+- 30-minute response cache and retry logic
+
+## Quick start
+
+### Prerequisites
+
+- Node.js 20+
+- Flutter 3.47+ (Linux desktop, Android SDK, or Xcode on macOS for iOS)
+
+### 1. Backend API
 
 ```bash
 npm install
-```
-
-### 2. Запуск API
-
-```bash
 npm run api
-# → 🍲 Suppercook API ready → http://localhost:3000
-```
-
-Проверка:
-
-```bash
+# → http://localhost:3000
 curl http://localhost:3000/health
 ```
 
-### 3. Запуск мобильного приложения
-
-```bash
-npm run mobile
-```
-
-Откройте Expo Go на телефоне и отсканируйте QR-код (устройство должно быть в той же сети), либо нажмите `a` для Android-эмулятора / `i` для iOS-симулятора.
-
-> **Важно:** эмулятор Android ходит на `10.0.2.2:3000`, iOS-симулятор — на `localhost:3000`. Это уже настроено в `src/api/client.ts`. Для реального устройства укажите IP компьютера:
->
-> ```bash
-> EXPO_PUBLIC_API_URL=http://192.168.x.x:3000 npm run mobile
-> ```
-
-### 4. Тесты
-
-```bash
-npm test          # 17 тестов: логика умного списка + единицы измерения
-npm run build:api # компиляция TypeScript
-```
-
-## API
-
-| Метод | Путь | Описание |
-|---|---|---|
-| GET | `/health` | Проверка живости |
-| GET | `/inventory` | Список продуктов |
-| POST | `/inventory` | Добавить продукт `{name, quantity, unit}` |
-| PATCH | `/inventory/:id` | Изменить |
-| DELETE | `/inventory/:id` | Удалить |
-| POST | `/inventory/recognize` | Распознать фото `{imageBase64, mimeType}` |
-| POST | `/recipes/suggest` | Рецепты из инвентаря `{request?, allergens?, preferences?}` |
-| GET | `/shopping` | Список покупок |
-| POST | `/shopping/from-recipe` | Добавить недостающее `{missingIngredients[], recipeId?}` |
-| POST | `/shopping/items` | Добавить вручную |
-| PATCH | `/shopping/items/:id` | Отметить купленным `{checked}` |
-| DELETE | `/shopping/items/:id` | Удалить |
-| DELETE | `/shopping/checked` | Очистить купленное |
-
-Идентификация пользователя — заголовок `x-user-id` (заглушка для MVP).
-
-### Пример: полный цикл
-
-```bash
-H='Content-Type: application/json'
-U='x-user-id: demo'
-
-# 1. Положить продукты в «холодильник»
-curl -X POST localhost:3000/inventory -H "$H" -H "$U" \
-  -d '{"name":"яйцо","quantity":6,"unit":"pcs"}'
-
-# 2. Получить рецепты
-curl -X POST localhost:3000/recipes/suggest -H "$H" -H "$U" -d '{}'
-
-# 3. Добавить недостающее в список покупок
-curl -X POST localhost:3000/shopping/from-recipe -H "$H" -H "$U" \
-  -d '{"missingIngredients":["сыр (60 g)"],"recipeId":"r1"}'
-```
-
-## Подключение OpenAI
-
-По умолчанию используется mock-провайдер (не требует ключа, подходит для разработки).
+The API starts with a mock AI provider and needs no key. To use OpenAI:
 
 ```bash
 cd apps/api
 cp .env.example .env
-# в .env установить:
 # AI_PROVIDER=openai
 # OPENAI_API_KEY=sk-...
 npm run start:dev
 ```
 
-При недоступности OpenAI происходит **автоматический fallback на mock** — пользователь не видит ошибку.
+### 2. Flutter client (active)
 
-### Как защищено от галлюцинаций AI
+```bash
+cd apps/mobile_flutter
+flutter pub get
+flutter run -d linux        # Linux desktop
+flutter run -d android      # Android
+flutter run -d ios          # iOS (macOS + Xcode)
+```
 
-1. **JSON-схема + zod**: ответ модели не принимается на веру, некорректная структура отклоняется.
-2. **Аллергены фильтруются кодом**, а не промптом — промпт можно «уговорить», код нельзя (`ai.service.ts → filterAllergens`).
-3. **Нехватка считается на сервере** (`recipes.service.ts → withMissing`), а не доверяется модели.
-4. **Кэш 30 минут** — повторяющиеся запросы не стоят денег.
-5. **Retry + fallback** — временные ошибки не роняют пользовательский сценарий.
+Release build for Linux:
 
-## Документация
+```bash
+flutter build linux --release
+./build/linux/x64/release/bundle/suppercook
+```
 
-- [Структура MVP](docs/01-mvp-scope.md) — приоритеты, метрики, дорожная карта
-- [Архитектура](docs/02-architecture.md) — стек, схема, AI-слой
-- [User Flow](docs/03-user-flow.md) — путь пользователя до первого блюда
-- [Подводные камни](docs/04-risks.md) — технические и продуктовые риски
+Dev shortcut — boot directly into a screen for visual QA:
 
-## Известные ограничения MVP
+```bash
+./build/linux/x64/release/bundle/suppercook --route=/recipe/salmon_bowl
+```
 
-- **Хранение в памяти**: данные сбрасываются при перезапуске API. Замена на PostgreSQL + Prisma — задача v1.1.
-- **Аутентификация**: заглушка через заголовок `x-user-id`.
-- **mock-провайдер**: распознавание фото возвращает фиксированный набор продуктов.
-- **Сообщество, чаты, недельное планирование** — в плане на v1.1–v2.0.
+More details: [`apps/mobile_flutter/README.md`](apps/mobile_flutter/README.md).
 
-## Стек
+### 3. Legacy React Native client
 
-**Mobile:** React Native + Expo · **Backend:** NestJS · **Валидация:** class-validator + zod · **AI:** OpenAI GPT (мультимодальный) с mock-fallback · **Тесты:** Jest
+```bash
+npm run mobile
+```
+
+Open Expo Go on your phone and scan the QR code. This was the first MVP; the Flutter client is now the primary target.
+
+## API
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Liveness check |
+| GET | `/inventory` | Pantry items |
+| POST | `/inventory` | Add item `{name, quantity, unit}` |
+| PATCH | `/inventory/:id` | Update item |
+| DELETE | `/inventory/:id` | Delete item |
+| POST | `/inventory/recognize` | Recognize a photo `{imageBase64, mimeType}` |
+| POST | `/recipes/suggest` | Recipes from inventory `{request?, allergens?, preferences?}` |
+| GET | `/shopping` | Shopping list |
+| POST | `/shopping/from-recipe` | Add only missing ingredients |
+| POST | `/shopping/items` | Add item manually |
+| PATCH | `/shopping/items/:id` | Toggle checked |
+| DELETE | `/shopping/items/:id` | Delete item |
+| DELETE | `/shopping/checked` | Clear bought items |
+
+User identification is a temporary `x-user-id` header for the MVP.
+
+### Example: full cycle
+
+```bash
+H='Content-Type: application/json'
+U='x-user-id: demo'
+
+# 1. Add ingredients
+curl -X POST localhost:3000/inventory -H "$H" -H "$U" \
+  -d '{"name":"eggs","quantity":6,"unit":"pcs"}'
+
+# 2. Get recipes
+curl -X POST localhost:3000/recipes/suggest -H "$H" -H "$U" -d '{}'
+
+# 3. Add missing ingredients to the shopping list
+curl -X POST localhost:3000/shopping/from-recipe -H "$H" -H "$U" \
+  -d '{"missingIngredients":["feta (60 g)"],"recipeId":"r1"}'
+```
+
+## Localization
+
+- Source strings: `apps/mobile_flutter/lib/l10n/app_en.arb` and `app_de.arb`
+- Generated with `flutter gen-l10n`
+- The current locale lives in `localeProvider`; changing it rebuilds `MaterialApp.router` in place — **no restart**
+- Backend content (recipe names, ingredients) uses a `LocalizedText { en, de }` value object
+- Rule: no hard-coded user-facing strings in widgets — only `context.l10n.key`
+
+To add a language: create `app_<code>.arb`, add the `Locale` to `supportedAppLocales`, run `flutter gen-l10n`.
+
+## Design system
+
+- Tokens: `apps/mobile_flutter/lib/app/theme/` (`AppColors`, `AppTypography`, `AppSpacing`)
+- Background `#0A0A0A`, surface `#141414`, accent `#F5A623`
+- Serif display for dish names and editorial headlines, Inter for functional UI
+- Components: `AppPrimaryButton`, `AppGhostButton`, `AppCard`, `AppFilterChip`, `RecipeHeroCard`, `RecipeWideCard`, `RecipeSmallCard`, `MatchBadge`, `AppEmptyState`
+- Adaptive navigation: bottom bar on phones, side rail on desktop (≥ 900 px)
+- All photography is demo content from Unsplash — see [`apps/mobile_flutter/assets/ATTRIBUTION.md`](apps/mobile_flutter/assets/ATTRIBUTION.md)
+
+## Testing
+
+```bash
+# Backend
+npm test
+npm run build:api
+
+# Flutter client
+cd apps/mobile_flutter
+flutter analyze
+flutter test
+```
+
+The Flutter test suite covers the core localization contract: start in English, switch to German live, persist the choice.
+
+## AI safety
+
+1. **JSON schema + zod** — malformed model output is rejected.
+2. **Allergens are filtered in code**, not in the prompt.
+3. **Missing ingredients are computed server-side**, never trusted to the model.
+4. **30-minute cache** — repeated requests do not cost money.
+5. **Retry + mock fallback** — temporary AI outages do not break the user flow.
+
+## Roadmap
+
+| Version | Scope |
+|---|---|
+| **v1.0 MVP** | Pantry + photo recognition, pantry-aware recipes, cooking mode, smart shopping list |
+| **v1.1** | Menu calendar, history, favorites, basic notifications |
+| **v1.2** | Weekly plan + calorie/macro targets + weekly shopping list |
+| **v2.0** | Community: recipe feed, chats, ratings, full UGC moderation |
+
+Immediate engineering next steps:
+
+1. Replace Flutter demo data with a repository layer over the NestJS API (`dio`, auth tokens).
+2. Add PostgreSQL + Prisma to the API.
+3. Connect real OpenAI vision and recipe generation with budget limits.
+4. Add account deletion, privacy policy and AI transparency for the German market (GDPR / AI Act).
+5. Ship Linux as Flatpak/AppImage, iOS via TestFlight, Android via Play Internal Testing.
+
+## Documentation
+
+Product docs (Russian):
+- [MVP scope](docs/01-mvp-scope.md)
+- [Architecture](docs/02-architecture.md)
+- [User flow](docs/03-user-flow.md)
+- [Risks](docs/04-risks.md)
+
+Flutter client docs:
+- [Client README](apps/mobile_flutter/README.md)
+
+## Status
+
+This is an actively developed MVP. The Flutter interface is feature-complete for the core loop and runs on Linux today. AI, authentication and persistence are intentionally mocked or in-memory until the API integration milestone.
