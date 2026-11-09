@@ -31,11 +31,9 @@ export function pickRecipeImage(
     return 'salmon_bowl';
   }
   if (/(pancake|pfannkuchen|блин)/.test(haystack)) return 'berry_pancakes';
-  if (
-    /(omelette|omelett|egg|ei|омлет|яичниц|завтрак|breakfast|frühstück)/.test(
-      haystack,
-    )
-  ) {
+  if (/(omelette|omelett|омлет)/.test(haystack)) return 'omelette';
+  if (/(fried eggs|spiegelei|яичниц)/.test(haystack)) return 'fried_eggs';
+  if (/(egg|ei|завтрак|breakfast|frühstück)/.test(haystack)) {
     return 'avocado_toast';
   }
   if (/(bowl|боул)/.test(haystack)) return 'harvest_bowl';

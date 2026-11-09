@@ -19,6 +19,8 @@ production launch.
 | `images/food/harvest_bowl.jpg` | `photo-1490645935967-10de6ba17061` |
 | `images/food/caesar_salad.jpg` | `photo-1512621776951-a57141f2eefd` |
 | `images/food/shared_table.jpg` | `photo-1504674900247-0877df9cc836` |
+| `images/food/omelette.jpg` | `photo-1510693206972-df098062cb71` |
+| `images/food/fried_eggs.jpg` | `photo-1533089860892-a7c6f0a88666` |
 
 ## Fonts
 

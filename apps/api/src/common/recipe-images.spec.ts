@@ -11,9 +11,13 @@ describe('pickRecipeImage', () => {
     );
   });
 
-  it('picks a breakfast image for an omelette', () => {
-    expect(pickRecipeImage('Tomato & Cheese Omelette', [], 0)).toBe(
-      'avocado_toast',
+  it('picks an omelette image', () => {
+    expect(pickRecipeImage('Tomato & Cheese Omelette', [], 0)).toBe('omelette');
+  });
+
+  it('picks a fried-egg image', () => {
+    expect(pickRecipeImage('Fried Eggs with Tomatoes', [], 0)).toBe(
+      'fried_eggs',
     );
   });
 

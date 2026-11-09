@@ -14,6 +14,8 @@ abstract final class ApiMappers {
     'mushroom_pizza',
     'berry_pancakes',
     'avocado_toast',
+    'omelette',
+    'fried_eggs',
     'harvest_bowl',
     'caesar_salad',
   };
