@@ -63,7 +63,7 @@ class _BottomBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: 76,
           child: Row(
             children: [
               _NavItem(
@@ -86,28 +86,25 @@ class _BottomBar extends StatelessWidget {
                     onTap: () => context.push('/scan'),
                     borderRadius: BorderRadius.circular(99),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
-                              gradient: AppColors.accentGradient,
+                              color: AppColors.accent,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.accent.withValues(alpha: 0.25),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                width: 1,
+                              ),
                             ),
                             child: const Icon(
-                              Icons.camera_alt_rounded,
+                              Icons.photo_camera_rounded,
                               color: Colors.black,
-                              size: 22,
+                              size: 24,
                             ),
                           ),
                           const SizedBox(height: 3),

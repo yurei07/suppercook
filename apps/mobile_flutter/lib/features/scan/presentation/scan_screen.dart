@@ -193,8 +193,8 @@ class _ScanPreview extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.center_focus_strong_rounded,
-                          size: 32,
+                          Icons.photo_camera_outlined,
+                          size: 34,
                           color: AppColors.accent,
                         ),
                       ),

@@ -150,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Expanded(
                         child: _QuickAction(
-                          icon: Icons.center_focus_strong_rounded,
+                          icon: Icons.photo_camera_outlined,
                           label: l10n.quickScan,
                           accent: true,
                           onTap: () => context.push('/scan'),
