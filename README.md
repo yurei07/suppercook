@@ -17,6 +17,7 @@ Suppercook is a cross-platform smart cooking assistant and social kitchen. Photo
 | Ingredient inventory API | ✅ | Add, merge duplicates, update, delete — `apps/api` |
 | Photo recognition | ✅ mock | Returns a realistic ingredient set; OpenAI vision can be enabled |
 | AI recipe generation | ✅ mock | 3 recipes with missing-ingredient calculation; OpenAI can be enabled |
+| Bilingual API contract | ✅ | `locale: en \| de` for recognition and recipes; localized mock catalog + image keys |
 | Smart shopping list | ✅ | Adds only what is missing from the recipe, with deduplication |
 | Nutrition (calories / macros) | ✅ | Per-serving values in every recipe response |
 | Weekly planning | ⏳ | UI is ready; persistence and API integration are next |
@@ -137,14 +138,16 @@ Open Expo Go on your phone and scan the QR code. This was the first MVP; the Flu
 | POST | `/inventory` | Add item `{name, quantity, unit}` |
 | PATCH | `/inventory/:id` | Update item |
 | DELETE | `/inventory/:id` | Delete item |
-| POST | `/inventory/recognize` | Recognize a photo `{imageBase64, mimeType}` |
-| POST | `/recipes/suggest` | Recipes from inventory `{request?, allergens?, preferences?}` |
+| POST | `/inventory/recognize` | Recognize a photo `{imageBase64, mimeType?, locale?}` |
+| POST | `/recipes/suggest` | Recipes from inventory `{request?, allergens?, preferences?, diet?, locale?}` |
 | GET | `/shopping` | Shopping list |
 | POST | `/shopping/from-recipe` | Add only missing ingredients |
 | POST | `/shopping/items` | Add item manually |
 | PATCH | `/shopping/items/:id` | Toggle checked |
 | DELETE | `/shopping/items/:id` | Delete item |
 | DELETE | `/shopping/checked` | Clear bought items |
+
+`locale` accepts `en` or `de` (default `en`) and controls the language of recognized ingredient names, recipe titles, descriptions, steps and tags. Every recipe response also includes an `image` key that the client maps to a local asset.
 
 User identification is a temporary `x-user-id` header for the MVP.
 
@@ -158,8 +161,9 @@ U='x-user-id: demo'
 curl -X POST localhost:3000/inventory -H "$H" -H "$U" \
   -d '{"name":"eggs","quantity":6,"unit":"pcs"}'
 
-# 2. Get recipes
-curl -X POST localhost:3000/recipes/suggest -H "$H" -H "$U" -d '{}'
+# 2. Get recipes in German
+curl -X POST localhost:3000/recipes/suggest -H "$H" -H "$U" \
+  -d '{"locale":"de"}'
 
 # 3. Add missing ingredients to the shopping list
 curl -X POST localhost:3000/shopping/from-recipe -H "$H" -H "$U" \
@@ -219,7 +223,7 @@ The Flutter test suite covers the core localization contract (start in English, 
 
 Immediate engineering next steps:
 
-1. Replace Flutter demo data with a repository layer over the NestJS API (`dio`, auth tokens).
+1. Replace Flutter demo data with a repository layer over the NestJS API (`dio`, auth tokens), using the new `locale` + `image` contract.
 2. Add PostgreSQL + Prisma to the API.
 3. Connect real OpenAI vision and recipe generation with budget limits.
 4. Add account deletion, privacy policy and AI transparency for the German market (GDPR / AI Act).

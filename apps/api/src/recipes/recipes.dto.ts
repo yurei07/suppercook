@@ -29,4 +29,9 @@ export class SuggestRecipesDto {
   @IsOptional()
   @IsIn(['lose_weight', 'maintain', 'gain_weight', 'none'])
   diet?: 'lose_weight' | 'maintain' | 'gain_weight' | 'none';
+
+  /** Язык ответа. По умолчанию — английский. */
+  @IsOptional()
+  @IsIn(['en', 'de'])
+  locale?: 'en' | 'de';
 }

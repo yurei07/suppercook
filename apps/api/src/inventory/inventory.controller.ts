@@ -71,6 +71,7 @@ export class InventoryController {
     const result = await this.ai.recognizeIngredients(
       dto.imageBase64,
       dto.mimeType ?? 'image/jpeg',
+      dto.locale ?? 'en',
     );
     return {
       items: result.items.map((i) => ({

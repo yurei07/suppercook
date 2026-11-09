@@ -49,4 +49,9 @@ export class RecognizePhotoDto {
   @IsOptional()
   @IsString()
   mimeType?: string;
+
+  /** Язык названий распознанных продуктов. По умолчанию — английский. */
+  @IsOptional()
+  @IsIn(['en', 'de'])
+  locale?: 'en' | 'de';
 }

@@ -1,3 +1,4 @@
+import { Locale } from '../common/domain.types';
 import { RecognitionOutput, GeneratedRecipesOutput } from './schemas';
 
 /**
@@ -9,6 +10,8 @@ export interface AiUserContext {
   allergens: string[];
   preferences: string[];
   diet?: string;
+  /** Язык ответа: EN или DE */
+  locale: Locale;
 }
 
 export interface RecipeGenerationInput {
@@ -30,6 +33,7 @@ export interface AiProvider {
   recognizeIngredients(
     imageBase64: string,
     mimeType: string,
+    locale: Locale,
   ): Promise<RecognitionOutput>;
 
   /** Генерация рецептов строго из имеющихся ингредиентов */

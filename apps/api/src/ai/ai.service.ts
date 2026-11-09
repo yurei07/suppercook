@@ -1,4 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Locale } from '../common/domain.types';
 import { AiProvider, RecipeGenerationInput } from './ai-provider.interface';
 import { MockAiProvider } from './mock.provider';
 import { OpenAiProvider } from './openai.provider';
@@ -46,10 +47,15 @@ export class AiService {
   async recognizeIngredients(
     imageBase64: string,
     mimeType = 'image/jpeg',
+    locale: Locale = 'en',
   ): Promise<RecognitionOutput> {
     const started = Date.now();
     try {
-      const result = await this.provider.recognizeIngredients(imageBase64, mimeType);
+      const result = await this.provider.recognizeIngredients(
+        imageBase64,
+        mimeType,
+        locale,
+      );
       this.log.log(
         `recognize: ${result.items.length} items за ${Date.now() - started}ms (${this.provider.name})`,
       );
@@ -57,7 +63,7 @@ export class AiService {
     } catch (error) {
       this.errorLog('recognize', error);
       // Fallback на mock, чтобы пользователь не видел ошибку
-      return this.mock.recognizeIngredients(imageBase64, mimeType);
+      return this.mock.recognizeIngredients(imageBase64, mimeType, locale);
     }
   }
 
@@ -124,7 +130,7 @@ export class AiService {
       .map((i) => `${i.name}:${i.quantity}:${i.unit}`)
       .sort()
       .join(',');
-    return `${input.context.allergens.join(',')}|${input.context.preferences.join(',')}|${input.request ?? ''}|${inv}`;
+    return `${input.context.locale}|${input.context.diet ?? ''}|${input.context.allergens.join(',')}|${input.context.preferences.join(',')}|${input.request ?? ''}|${inv}`;
   }
 
   private pruneCache(): void {

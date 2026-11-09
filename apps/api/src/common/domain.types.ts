@@ -8,6 +8,9 @@
 /** Единицы измерения ингредиентов */
 export type Unit = 'g' | 'ml' | 'pcs';
 
+/** Поддерживаемые языки клиента */
+export type Locale = 'en' | 'de';
+
 /** Элемент инвентаря пользователя (что есть в холодильнике) */
 export interface InventoryItem {
   id: string;
@@ -46,6 +49,8 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
+  /** Ключ изображения для клиента (assets/images/food/<image>.jpg) */
+  image: string;
   servings: number;
   timeMinutes: number;
   difficulty: Difficulty;

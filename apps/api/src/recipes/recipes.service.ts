@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { AiService } from '../ai/ai.service';
 import { Recipe, RecipeIngredient, Unit } from '../common/domain.types';
+import { pickRecipeImage } from '../common/recipe-images';
 import { normalizeIngredientName, toGrams } from '../common/units';
 import { InventoryService } from '../inventory/inventory.service';
 import { SuggestRecipesDto } from './recipes.dto';
@@ -31,6 +32,7 @@ export class RecipesService {
         allergens: dto.allergens ?? [],
         preferences: dto.preferences ?? [],
         diet: dto.diet,
+        locale: dto.locale ?? 'en',
       },
       inventory: inventory.map((i) => ({
         name: i.name,
@@ -43,7 +45,9 @@ export class RecipesService {
     const result = await this.ai.generateRecipes(input);
 
     // Считаем нехватку на сервере — AI это не считает (ненадёжно)
-    return result.recipes.map((r) => this.withMissing(r, inventory));
+    return result.recipes.map((r, index) =>
+      this.withMissing(r, inventory, index),
+    );
   }
 
   /**
@@ -55,8 +59,9 @@ export class RecipesService {
   private withMissing(
     generated: Parameters<typeof this.toRecipe>[0],
     inventory: Array<{ name: string; quantity: number; unit: Unit }>,
+    imageIndex: number,
   ): Recipe {
-    const recipe = this.toRecipe(generated);
+    const recipe = this.toRecipe(generated, imageIndex);
     const missing: string[] = [];
 
     for (const ing of recipe.ingredients) {
@@ -78,17 +83,20 @@ export class RecipesService {
     return { ...recipe, missingIngredients: missing };
   }
 
-  private toRecipe(generated: {
-    title: string;
-    description: string;
-    servings: number;
-    timeMinutes: number;
-    difficulty: 'easy' | 'medium' | 'hard';
-    ingredients: Array<{ name: string; quantity: number; unit: 'g' | 'ml' }>;
-    steps: string[];
-    nutrition: { kcal: number; protein: number; carbs: number; fat: number };
-    tags: string[];
-  }): Recipe {
+  private toRecipe(
+    generated: {
+      title: string;
+      description: string;
+      servings: number;
+      timeMinutes: number;
+      difficulty: 'easy' | 'medium' | 'hard';
+      ingredients: Array<{ name: string; quantity: number; unit: 'g' | 'ml' }>;
+      steps: string[];
+      nutrition: { kcal: number; protein: number; carbs: number; fat: number };
+      tags: string[];
+    },
+    imageIndex: number,
+  ): Recipe {
     const ingredients: RecipeIngredient[] = generated.ingredients.map((i) => ({
       name: normalizeIngredientName(i.name),
       quantity: i.quantity,
@@ -99,6 +107,7 @@ export class RecipesService {
       id: randomUUID(),
       title: generated.title,
       description: generated.description,
+      image: pickRecipeImage(generated.title, generated.tags, imageIndex),
       servings: generated.servings,
       timeMinutes: generated.timeMinutes,
       difficulty: generated.difficulty,

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Locale } from '../common/domain.types';
 import { AiProvider, RecipeGenerationInput } from './ai-provider.interface';
 import {
   GeneratedRecipesOutput,
@@ -37,7 +38,9 @@ export class OpenAiProvider implements AiProvider {
   async recognizeIngredients(
     imageBase64: string,
     mimeType: string,
+    locale: Locale,
   ): Promise<RecognitionOutput> {
+    const language = this.languageName(locale);
     const raw = await this.chat(
       [
         {
@@ -47,7 +50,10 @@ export class OpenAiProvider implements AiProvider {
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Распознай продукты на этом фото.' },
+            {
+              type: 'text',
+              text: `Распознай продукты на этом фото. Верни названия на языке: ${language}.`,
+            },
             {
               type: 'image_url',
               image_url: { url: `data:${mimeType};base64,${imageBase64}` },
@@ -74,17 +80,22 @@ export class OpenAiProvider implements AiProvider {
       : '';
 
     const requestText = input.request ? `\nДополнительный запрос: ${input.request}` : '';
+    const language = this.languageName(input.context.locale);
 
     return this.chat(
       [
         { role: 'system', content: RECIPE_SYSTEM_PROMPT },
         {
           role: 'user',
-          content: `Инвентарь пользователя:\n${inventoryText}${allergensText}${prefsText}${requestText}\n\nПредложи 3 рецепта.`,
+          content: `Инвентарь пользователя:\n${inventoryText}${allergensText}${prefsText}${requestText}\n\nПредложи 3 рецепта. Все текстовые поля верни на языке: ${language}.`,
         },
       ],
       generatedRecipesSchema,
     );
+  }
+
+  private languageName(locale: Locale): string {
+    return locale === 'de' ? 'German (Deutsch)' : 'English';
   }
 
   /**
