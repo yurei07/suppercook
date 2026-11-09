@@ -239,6 +239,7 @@ Product docs (Russian):
 
 Flutter client docs:
 - [Client README](apps/mobile_flutter/README.md)
+- [Android build](apps/mobile_flutter/docs/ANDROID_BUILD.md)
 
 ## Status
 
