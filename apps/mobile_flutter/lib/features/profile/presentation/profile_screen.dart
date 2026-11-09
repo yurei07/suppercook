@@ -9,6 +9,7 @@ import '../../../core/app_providers.dart';
 import '../../../core/extensions.dart';
 import '../../../core/locale_controller.dart';
 import '../../../data/providers/pantry_provider.dart';
+import '../../../data/providers/planner_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../data/providers/stats_provider.dart';
 import '../../../data/providers/user_provider.dart';
@@ -170,6 +171,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ref.invalidate(localeProvider);
     ref.invalidate(pantryProvider);
     ref.invalidate(shoppingProvider);
+    ref.invalidate(plannerProvider);
     ref.invalidate(userProfileProvider);
     ref.invalidate(recipesCookedProvider);
     if (!mounted) return;

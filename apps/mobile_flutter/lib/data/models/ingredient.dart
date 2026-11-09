@@ -38,4 +38,25 @@ class Ingredient {
     final value = rounded ? amount.toInt().toString() : amount.toStringAsFixed(1);
     return '$value ${unitLabel(locale)}';
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name.toJson(),
+    'amount': amount,
+    'unit': unit,
+    'category': category.name,
+  };
+
+  factory Ingredient.fromJson(Map<String, dynamic> json) => Ingredient(
+    id: json['id'] as String,
+    name: LocalizedText.fromJson(
+      Map<String, dynamic>.from(json['name'] as Map),
+    ),
+    amount: (json['amount'] as num).toDouble(),
+    unit: json['unit'] as String,
+    category: IngredientCategory.values.firstWhere(
+      (value) => value.name == json['category'],
+      orElse: () => IngredientCategory.other,
+    ),
+  );
 }

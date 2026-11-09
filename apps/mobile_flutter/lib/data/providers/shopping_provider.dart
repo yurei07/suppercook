@@ -5,6 +5,7 @@ import '../models/ingredient.dart';
 import '../models/localized_text.dart';
 import '../models/recipe.dart';
 import '../models/shopping_item.dart';
+import '../storage/app_storage.dart';
 
 final shoppingProvider = NotifierProvider<ShoppingNotifier, List<ShoppingItem>>(
   ShoppingNotifier.new,
@@ -20,13 +21,19 @@ final shoppingProgressProvider = Provider<({int checked, int total})>((ref) {
 
 class ShoppingNotifier extends Notifier<List<ShoppingItem>> {
   @override
-  List<ShoppingItem> build() => List.of(MockData.shoppingItems);
+  List<ShoppingItem> build() {
+    final storage = ref.watch(appStorageProvider);
+    return storage.readShopping() ?? List.of(MockData.shoppingItems);
+  }
+
+  void _persist() => ref.read(appStorageProvider).writeShopping(state);
 
   void toggle(String id) {
     state = [
       for (final item in state)
         item.id == id ? item.copyWith(checked: !item.checked) : item,
     ];
+    _persist();
   }
 
   /// Adds only the ingredients the user does not already have at home.
@@ -46,6 +53,7 @@ class ShoppingNotifier extends Notifier<List<ShoppingItem>> {
     ];
     if (additions.isEmpty) return 0;
     state = [...state, ...additions];
+    _persist();
     return additions.length;
   }
 
@@ -60,13 +68,20 @@ class ShoppingNotifier extends Notifier<List<ShoppingItem>> {
         category: IngredientCategory.other,
       ),
     ];
+    _persist();
   }
 
   void clearChecked() {
-    state = state.where((item) => !item.checked).toList();
+    final next = state.where((item) => !item.checked).toList();
+    if (next.length == state.length) return;
+    state = next;
+    _persist();
   }
 
   void remove(String id) {
-    state = state.where((item) => item.id != id).toList();
+    final next = state.where((item) => item.id != id).toList();
+    if (next.length == state.length) return;
+    state = next;
+    _persist();
   }
 }

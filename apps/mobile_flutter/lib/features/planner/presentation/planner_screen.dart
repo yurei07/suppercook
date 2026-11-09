@@ -8,6 +8,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/extensions.dart';
 import '../../../data/models/recipe.dart';
+import '../../../data/providers/planner_provider.dart';
 import '../../../data/providers/recipe_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
@@ -24,21 +25,6 @@ class PlannerScreen extends ConsumerStatefulWidget {
 class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   late int _selectedDay;
   late final DateTime _weekStart;
-  final Map<int, Map<String, String>> _plan = {
-    0: {
-      'breakfast': 'berry_pancakes',
-      'lunch': 'green_salad',
-      'dinner': 'salmon_bowl',
-    },
-    1: {'breakfast': 'avocado_toast', 'dinner': 'tomato_pasta'},
-    2: {'lunch': 'harvest_bowl', 'dinner': 'mushroom_pizza'},
-    3: {
-      'breakfast': 'berry_pancakes',
-      'lunch': 'tomato_pasta',
-      'dinner': 'pumpkin_soup',
-    },
-    4: {'dinner': 'mushroom_pizza'},
-  };
 
   @override
   void initState() {
@@ -86,10 +72,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                 RecipeMiniTile(
                   recipe: recipe,
                   onTap: () {
-                    setState(() {
-                      _plan[_selectedDay] ??= {};
-                      _plan[_selectedDay]![mealKey] = recipe.id;
-                    });
+                    ref
+                        .read(plannerProvider.notifier)
+                        .setMeal(_selectedDay, mealKey, recipe.id);
                     Navigator.of(sheetContext).pop();
                   },
                 ),
@@ -123,15 +108,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       'avocado_toast',
       'berry_pancakes',
     ];
-    setState(() {
-      for (var day = 0; day < 7; day++) {
-        _plan[day] = {
+    final plan = <int, Map<String, String>>{
+      for (var day = 0; day < 7; day++)
+        day: {
           'breakfast': breakfasts[day],
           'lunch': lunch.id,
           'dinner': dinners[day],
-        };
-      }
-    });
+        },
+    };
+    ref.read(plannerProvider.notifier).replaceAll(plan);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(context.l10n.planGenerated)),
     );
@@ -142,7 +127,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final l10n = context.l10n;
     final locale = Localizations.localeOf(context).languageCode;
     final recipes = ref.watch(recipesProvider);
-    final dayPlan = _plan[_selectedDay] ?? const {};
+    final plan = ref.watch(plannerProvider);
+    final dayPlan = plan[_selectedDay] ?? const {};
 
     final meals = [
       ('breakfast', l10n.breakfast),

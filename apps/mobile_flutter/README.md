@@ -19,6 +19,7 @@ Cross-platform Suppercook client: iOS, Android and Linux desktop from a single F
 - **Profile**: language, diet, allergies, goal, notifications, about, reset demo data.
 - **Responsive layout**: bottom navigation on phones, side rail on Linux (≥ 900 px).
 - **Localization**: EN/DE with instant switching, no restart.
+- **Local persistence**: pantry, shopping list, weekly plan and profile settings survive a restart.
 
 ## Run
 
@@ -87,7 +88,7 @@ Add a language: create `app_<code>.arb`, add the `Locale` to `supportedAppLocale
 1. **AI recognition** returns a fixed ingredient set (`MockData.scanDetected`) after a photo is selected.
 2. **AI chat** answers from a template based on the top pantry recipe.
 3. **Auth** is a stub; no data leaves the device.
-4. **State** lives in Riverpod memory and does not survive a restart (except profile prefs and the cooked-meals counter).
+4. **State is local-first**: pantry, shopping list, weekly plan and profile prefs persist in SharedPreferences. There is no server sync yet.
 5. **Camera on Linux** is unavailable — file upload is used instead.
 
 Next step: connect `apps/api` (NestJS) by replacing `MockData` with a repository layer, adding `dio`, auth tokens and the real `/inventory`, `/recipes/suggest`, `/shopping` endpoints.
@@ -99,7 +100,7 @@ flutter analyze
 flutter test
 ```
 
-The current test covers the core contract: start in English → switch to German live → persist the choice in prefs.
+Tests cover the core localization contract (start in English → switch to German live → persist the choice) and local persistence of the pantry, shopping list and weekly planner across provider restarts.
 
 ## Assets
 

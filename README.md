@@ -13,6 +13,7 @@ Suppercook is a cross-platform smart cooking assistant and social kitchen. Photo
 | Flutter client (iOS / Android / Linux) | ✅ | Onboarding, pantry, scan flow, recipe suggestions, cooking mode, shopping list, weekly planner, AI chat UI, profile |
 | English / German localization | ✅ | Live language switching without restart, ARB-based, localized API content model |
 | Premium dark design system | ✅ | Tokens, serif + sans typography, reusable card/button/badge components |
+| Local persistence | ✅ | Pantry, shopping list, weekly plan and profile settings survive a restart |
 | Ingredient inventory API | ✅ | Add, merge duplicates, update, delete — `apps/api` |
 | Photo recognition | ✅ mock | Returns a realistic ingredient set; OpenAI vision can be enabled |
 | AI recipe generation | ✅ mock | 3 recipes with missing-ingredient calculation; OpenAI can be enabled |
@@ -197,7 +198,7 @@ flutter analyze
 flutter test
 ```
 
-The Flutter test suite covers the core localization contract: start in English, switch to German live, persist the choice.
+The Flutter test suite covers the core localization contract (start in English, switch to German live, persist the choice) and local persistence of the pantry, shopping list and weekly planner across provider restarts.
 
 ## AI safety
 
@@ -237,4 +238,4 @@ Flutter client docs:
 
 ## Status
 
-This is an actively developed MVP. The Flutter interface is feature-complete for the core loop and runs on Linux today. AI, authentication and persistence are intentionally mocked or in-memory until the API integration milestone.
+This is an actively developed MVP. The Flutter interface is feature-complete for the core loop and runs on Linux today. Pantry, shopping list, weekly plan and profile settings persist locally. AI and authentication are intentionally mocked until the API integration milestone; server-side persistence is still in-memory.
