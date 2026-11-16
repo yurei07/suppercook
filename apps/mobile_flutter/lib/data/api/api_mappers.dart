@@ -2,6 +2,7 @@ import '../mock_data.dart';
 import '../models/ingredient.dart';
 import '../models/localized_text.dart';
 import '../models/recipe.dart';
+import '../models/shopping_item.dart';
 import 'api_models.dart';
 
 abstract final class ApiMappers {
@@ -83,6 +84,17 @@ abstract final class ApiMappers {
 
   static Ingredient recognizedItem(ApiRecognitionItem item) =>
       ingredient(item.name, item.quantity, item.unit);
+
+  static ShoppingItem shoppingItem(ApiShoppingItem item) {
+    final source = ingredient(item.name, item.quantity, item.unit);
+    return ShoppingItem(
+      id: item.id,
+      name: LocalizedText.same(item.name),
+      category: source.category,
+      checked: item.checked,
+      source: source,
+    );
+  }
 
   static RecipeDifficulty _difficulty(String raw) {
     return switch (raw.toLowerCase()) {

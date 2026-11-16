@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import '../models/ingredient.dart';
 import '../models/recipe.dart';
+import '../models/shopping_item.dart';
 import 'api_mappers.dart';
 import 'suppercook_api.dart';
 
@@ -100,6 +101,57 @@ class ApiRepository {
     } catch (error) {
       throw ApiException('Could not recognize the photo', error);
     }
+  }
+
+  Future<List<ShoppingItem>> fetchShopping() async {
+    try {
+      final items = await _api.fetchShopping();
+      return [for (final item in items) ApiMappers.shoppingItem(item)];
+    } catch (error) {
+      throw ApiException('Could not load the shopping list', error);
+    }
+  }
+
+  Future<void> addShoppingItem({
+    required String name,
+    required double quantity,
+    required String unit,
+  }) async {
+    await _api.addShoppingItem(name: name, quantity: quantity, unit: unit);
+  }
+
+  /// Adds exactly what's missing from the recipe. The server deduplicates and
+  /// skips anything the user already has in its inventory.
+  Future<void> addMissingFromRecipe(
+    Recipe recipe,
+    Set<String> pantryIds,
+    Locale locale,
+  ) async {
+    final missing = recipe.missing(pantryIds);
+    if (missing.isEmpty) return;
+
+    final strings = [
+      for (final item in missing) _missingString(item, locale),
+    ];
+    await _api.addMissingFromRecipe(
+      missingIngredients: strings,
+      recipeId: recipe.id,
+    );
+  }
+
+  Future<void> toggleShoppingItem(String id, bool checked) =>
+      _api.toggleShoppingItem(id, checked);
+
+  Future<void> removeShoppingItem(String id) => _api.removeShoppingItem(id);
+
+  Future<void> clearCheckedShopping() => _api.clearCheckedShopping();
+
+  String _missingString(Ingredient item, Locale locale) {
+    final (quantity, unit) = _apiQuantity(item);
+    final amount = quantity == quantity.roundToDouble()
+        ? quantity.toInt().toString()
+        : quantity.toStringAsFixed(1);
+    return '${item.name.resolve(locale)} ($amount $unit)';
   }
 
   (double, String) _apiQuantity(Ingredient item) {

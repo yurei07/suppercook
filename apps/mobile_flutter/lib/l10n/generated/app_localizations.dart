@@ -782,6 +782,12 @@ abstract class AppLocalizations {
   /// **'Loading recipes…'**
   String get loadingRecipes;
 
+  /// No description provided for @loadingList.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loadingList;
+
   /// No description provided for @liveBadge.
   ///
   /// In en, this message translates to:

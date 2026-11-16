@@ -9,6 +9,8 @@ import '../../../core/extensions.dart';
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/recipe.dart';
 import '../../../data/providers/pantry_provider.dart';
+import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/recipe_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -194,13 +196,34 @@ class RecipeDetailScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: _BottomBar(
         missingCount: missing.length,
-        onAddMissing: () {
-          ref
-              .read(shoppingProvider.notifier)
-              .addMissing(recipe, pantryIds);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.addedToList)),
-          );
+        onAddMissing: () async {
+          final source = ref.read(dataSourceProvider);
+          if (source == DataSource.api) {
+            try {
+              await ref.read(apiRepositoryProvider).addMissingFromRecipe(
+                recipe,
+                pantryIds,
+                Localizations.localeOf(context),
+              );
+              ref.invalidate(apiShoppingProvider);
+            } catch (_) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(context.l10n.apiUnreachable)),
+                );
+              }
+              return;
+            }
+          } else {
+            ref
+                .read(shoppingProvider.notifier)
+                .addMissing(recipe, pantryIds);
+          }
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.addedToList)),
+            );
+          }
         },
         onStartCooking: () =>
             context.push('/recipe/${recipe.id}/cook'),

@@ -19,7 +19,7 @@ What works today:
 - scan flow with camera/gallery on mobile and file upload on desktop
 - recipe list, recipe detail, cooking mode and per-serving macros
 - EN/DE localization with instant switching
-- Live API mode for recipe suggestions and photo recognition (Profile → Data source)
+- Live API mode for recipe suggestions, photo recognition and the shopping list (Profile → Data source)
 - mock ingredient recognition and mock AI chat in demo mode
 
 What's still fake or missing:
@@ -28,7 +28,7 @@ What's still fake or missing:
 - the AI chat answers from a template
 - login is a stub, there are no real accounts
 - the API persists to a local SQLite file; PostgreSQL is the production target
-- Live API only covers recipes and photo recognition so far; the shopping list and planner are still local
+- Live API covers recipes, photo recognition and the shopping list; the planner is still local
 - pantry sync with the API is one-way (local → backend) before recipe generation
 - community features aren't started
 
@@ -153,7 +153,8 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 
 - [x] API client/repository for recipes and photo recognition, with a Demo / Live API switch.
 - [x] Prisma + SQLite persistence for inventory and shopping list (Postgres is the production target).
-- [ ] Sync the shopping list and planner with the API, and add proper offline handling.
+- [x] Shopping list syncs with the API in Live API mode (read, add, toggle, clear).
+- [ ] Sync the planner with the API and add proper offline handling.
 - [ ] Move the API to PostgreSQL + real authentication.
 - [ ] Connect OpenAI vision and generation with budget limits.
 - [ ] Add CI and a proper release keystore.

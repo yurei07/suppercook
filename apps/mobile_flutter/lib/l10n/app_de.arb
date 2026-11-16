@@ -121,6 +121,7 @@
   "filterVegan": "Vegan",
   "filterHighProtein": "Proteinreich",
   "loadingRecipes": "Rezepte werden geladen…",
+  "loadingList": "Wird geladen…",
   "liveBadge": "Live-API",
   "demoBadge": "Demo-Daten",
   "noRecipesTitle": "Noch keine Rezepte",

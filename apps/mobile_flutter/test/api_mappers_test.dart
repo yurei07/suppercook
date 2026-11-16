@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:suppercook/data/api/api_mappers.dart';
 import 'package:suppercook/data/api/api_models.dart';
+import 'package:suppercook/data/models/ingredient.dart';
 import 'package:suppercook/data/models/recipe.dart';
 
 void main() {
@@ -58,5 +59,23 @@ void main() {
   test('falls back to a known image for unknown API keys', () {
     expect(ApiMappers.imageAsset('unknown_image'), endsWith('shared_table.jpg'));
     expect(ApiMappers.imageAsset('pumpkin_soup'), endsWith('pumpkin_soup.jpg'));
+  });
+
+  test('maps an API shopping item into the local model', () {
+    final item = ApiMappers.shoppingItem(
+      ApiShoppingItem.fromJson({
+        'id': 'shop-1',
+        'name': 'Käse',
+        'quantity': 60,
+        'unit': 'g',
+        'checked': true,
+        'recipeIds': ['r1'],
+      }),
+    );
+
+    expect(item.id, 'shop-1');
+    expect(item.checked, isTrue);
+    expect(item.source?.id, 'cheese');
+    expect(item.category, IngredientCategory.dairy);
   });
 }

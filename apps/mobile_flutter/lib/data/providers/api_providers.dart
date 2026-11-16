@@ -6,9 +6,11 @@ import '../api/api_config.dart';
 import '../api/api_repository.dart';
 import '../api/suppercook_api.dart';
 import '../models/recipe.dart';
+import '../models/shopping_item.dart';
 import 'data_source_provider.dart';
 import 'pantry_provider.dart';
 import 'recipe_provider.dart';
+import 'shopping_provider.dart';
 import 'user_provider.dart';
 
 final dioProvider = Provider<Dio>((ref) {
@@ -63,4 +65,14 @@ final suggestionsFeedProvider = FutureProvider<List<Recipe>>((ref) async {
   );
   ref.read(remoteRecipesProvider.notifier).putAll(recipes);
   return recipes;
+});
+
+/// Shopping list for the current data source. Demo mode mirrors the local
+/// notifier; Live API mode reads the backend list.
+final apiShoppingProvider = FutureProvider<List<ShoppingItem>>((ref) async {
+  final source = ref.watch(dataSourceProvider);
+  if (source == DataSource.demo) {
+    return ref.watch(shoppingProvider);
+  }
+  return ref.watch(apiRepositoryProvider).fetchShopping();
 });

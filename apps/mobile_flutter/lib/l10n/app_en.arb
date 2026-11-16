@@ -181,6 +181,7 @@
   "filterVegan": "Vegan",
   "filterHighProtein": "High protein",
   "loadingRecipes": "Loading recipes…",
+  "loadingList": "Loading…",
   "liveBadge": "Live API",
   "demoBadge": "Demo data",
   "noRecipesTitle": "No recipes yet",

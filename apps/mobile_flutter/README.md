@@ -70,7 +70,7 @@ For dev builds you can also force the mode without touching the UI:
 flutter run -d linux --dart-define=SUPPERCOOK_DATA_SOURCE=api
 ```
 
-Current scope: recipe suggestions and photo recognition use the API. The pantry is synced one way (local → backend) before generation; the shopping list and planner stay local. The app allows cleartext HTTP on Android for local development.
+Current scope: recipe suggestions, photo recognition and the shopping list use the API. The pantry is synced one way (local → backend) before generation; the planner stays local. The app allows cleartext HTTP on Android for local development.
 
 ## Architecture
 
@@ -116,7 +116,7 @@ Add a language: create `app_<code>.arb`, add the `Locale` to `supportedAppLocale
 1. **AI recognition** returns a fixed ingredient set (`MockData.scanDetected`) after a photo is selected.
 2. **AI chat** answers from a template based on the top pantry recipe.
 3. **Auth** is a stub; no data leaves the device.
-4. **State is local-first**: pantry, shopping list, weekly plan and profile prefs persist in SharedPreferences. Recipe suggestions and recognition can come from the API in Live API mode; shopping and planner sync are not implemented yet.
+4. **State is local-first**: pantry, shopping list, weekly plan and profile prefs persist in SharedPreferences. In Live API mode, recipes, recognition and the shopping list come from the backend; planner sync is not implemented yet.
 5. **Camera on Linux** is unavailable — file upload is used instead.
 6. **The backend's AI is a mock** unless `AI_PROVIDER=openai` and an API key are configured.
 

@@ -406,6 +406,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get loadingRecipes => 'Rezepte werden geladen…';
 
   @override
+  String get loadingList => 'Wird geladen…';
+
+  @override
   String get liveBadge => 'Live-API';
 
   @override

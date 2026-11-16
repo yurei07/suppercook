@@ -142,3 +142,33 @@ class ApiRecognitionItem {
         confidence: _asDouble(json['confidence']),
       );
 }
+
+class ApiShoppingItem {
+  final String id;
+  final String name;
+  final double quantity;
+  final String unit;
+  final bool checked;
+  final List<String> recipeIds;
+
+  const ApiShoppingItem({
+    required this.id,
+    required this.name,
+    required this.quantity,
+    required this.unit,
+    required this.checked,
+    required this.recipeIds,
+  });
+
+  factory ApiShoppingItem.fromJson(Map<String, dynamic> json) =>
+      ApiShoppingItem(
+        id: _asString(json['id']),
+        name: _asString(json['name']),
+        quantity: _asDouble(json['quantity']),
+        unit: _asString(json['unit'], 'g'),
+        checked: json['checked'] == true,
+        recipeIds: [
+          for (final item in _asList(json['recipeIds'])) item.toString(),
+        ],
+      );
+}

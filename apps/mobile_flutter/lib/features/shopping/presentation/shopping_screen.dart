@@ -7,6 +7,8 @@ import '../../../app/theme/app_typography.dart';
 import '../../../core/extensions.dart';
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/shopping_item.dart';
+import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/pantry_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -17,7 +19,16 @@ import '../../../shared/widgets/app_states.dart';
 class ShoppingScreen extends ConsumerWidget {
   const ShoppingScreen({super.key});
 
-  Future<void> _showAddItem(BuildContext context, WidgetRef ref) async {
+  bool _atHome(ShoppingItem item, Set<String> pantryIds) {
+    return pantryIds.contains(item.id) ||
+        (item.source != null && pantryIds.contains(item.source!.id));
+  }
+
+  Future<void> _showAddItem(
+    BuildContext context,
+    WidgetRef ref,
+    bool apiMode,
+  ) async {
     final controller = TextEditingController();
     final l10n = context.l10n;
 
@@ -46,16 +57,16 @@ class ShoppingScreen extends ConsumerWidget {
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(hintText: l10n.itemName),
               onSubmitted: (value) {
-                ref.read(shoppingProvider.notifier).addCustom(value);
                 Navigator.of(sheetContext).pop();
+                _addItem(context, ref, apiMode, value);
               },
             ),
             const SizedBox(height: AppSpacing.lg),
             AppPrimaryButton(
               label: l10n.addToList,
               onPressed: () {
-                ref.read(shoppingProvider.notifier).addCustom(controller.text);
                 Navigator.of(sheetContext).pop();
+                _addItem(context, ref, apiMode, controller.text);
               },
             ),
           ],
@@ -64,16 +75,118 @@ class ShoppingScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _addItem(
+    BuildContext context,
+    WidgetRef ref,
+    bool apiMode,
+    String value,
+  ) async {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return;
+
+    if (!apiMode) {
+      ref.read(shoppingProvider.notifier).addCustom(trimmed);
+      return;
+    }
+
+    try {
+      await ref
+          .read(apiRepositoryProvider)
+          .addShoppingItem(name: trimmed, quantity: 1, unit: 'g');
+      ref.invalidate(apiShoppingProvider);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.apiUnreachable)),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggle(
+    BuildContext context,
+    WidgetRef ref,
+    bool apiMode,
+    ShoppingItem item,
+  ) async {
+    if (!apiMode) {
+      ref.read(shoppingProvider.notifier).toggle(item.id);
+      return;
+    }
+
+    try {
+      await ref
+          .read(apiRepositoryProvider)
+          .toggleShoppingItem(item.id, !item.checked);
+      ref.invalidate(apiShoppingProvider);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.apiUnreachable)),
+        );
+      }
+    }
+  }
+
+  Future<void> _remove(
+    BuildContext context,
+    WidgetRef ref,
+    bool apiMode,
+    ShoppingItem item,
+  ) async {
+    if (!apiMode) {
+      ref.read(shoppingProvider.notifier).remove(item.id);
+      return;
+    }
+
+    try {
+      await ref.read(apiRepositoryProvider).removeShoppingItem(item.id);
+      ref.invalidate(apiShoppingProvider);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.apiUnreachable)),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearChecked(
+    BuildContext context,
+    WidgetRef ref,
+    bool apiMode,
+  ) async {
+    if (!apiMode) {
+      ref.read(shoppingProvider.notifier).clearChecked();
+      return;
+    }
+
+    try {
+      await ref.read(apiRepositoryProvider).clearCheckedShopping();
+      ref.invalidate(apiShoppingProvider);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.apiUnreachable)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final items = ref.watch(shoppingProvider);
+    final source = ref.watch(dataSourceProvider);
+    final feed = ref.watch(apiShoppingProvider);
     final pantryIds = ref.watch(pantryIdsProvider);
-    final progress = ref.watch(shoppingProgressProvider);
+    final apiMode = source == DataSource.api;
 
-    final atHome = items.where((item) => pantryIds.contains(item.id)).toList();
-    final active =
-        items.where((item) => !pantryIds.contains(item.id)).toList();
+    final items = feed.asData?.value ?? const <ShoppingItem>[];
+    final checked = items.where((item) => item.checked).length;
+    final ratio = items.isEmpty ? 0.0 : checked / items.length;
+
+    final atHome = items.where((item) => _atHome(item, pantryIds)).toList();
+    final active = items.where((item) => !_atHome(item, pantryIds)).toList();
 
     final grouped = <IngredientCategory, List<ShoppingItem>>{};
     for (final item in active) {
@@ -86,12 +199,10 @@ class ShoppingScreen extends ConsumerWidget {
       IngredientCategory.other,
     ];
 
-    final ratio = progress.total == 0 ? 0.0 : progress.checked / progress.total;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddItem(context, ref),
+        onPressed: () => _showAddItem(context, ref, apiMode),
         backgroundColor: AppColors.accent,
         foregroundColor: Colors.black,
         child: const Icon(Icons.add_rounded),
@@ -112,14 +223,14 @@ class ShoppingScreen extends ConsumerWidget {
                 children: [
                   AppPageHeader(
                     title: l10n.shoppingTitle,
-                    subtitle: l10n.shoppingProgress(progress.checked, progress.total),
+                    subtitle: l10n.shoppingProgress(checked, items.length),
                     showBack: false,
                     actions: [
                       AppIconButton(
                         icon: Icons.delete_sweep_outlined,
                         tooltip: l10n.clearChecked,
                         onPressed: () =>
-                            ref.read(shoppingProvider.notifier).clearChecked(),
+                            _clearChecked(context, ref, apiMode),
                       ),
                     ],
                   ),
@@ -131,10 +242,7 @@ class ShoppingScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Text(
-                              l10n.shoppingProgress(
-                                progress.checked,
-                                progress.total,
-                              ),
+                              l10n.shoppingProgress(checked, items.length),
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const Spacer(),
@@ -160,7 +268,23 @@ class ShoppingScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  if (active.isEmpty && atHome.isEmpty)
+                  if (feed.isLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.xxl),
+                      child: AppLoadingState(label: l10n.loadingList),
+                    )
+                  else if (feed.hasError)
+                    SizedBox(
+                      height: 360,
+                      child: AppEmptyState(
+                        icon: Icons.cloud_off_rounded,
+                        title: l10n.apiUnreachable,
+                        body: l10n.dataSourceHint,
+                        actionLabel: l10n.retry,
+                        onAction: () => ref.invalidate(apiShoppingProvider),
+                      ),
+                    )
+                  else if (active.isEmpty && atHome.isEmpty)
                     SizedBox(
                       height: 380,
                       child: AppEmptyState(
@@ -168,7 +292,7 @@ class ShoppingScreen extends ConsumerWidget {
                         title: l10n.shoppingEmpty,
                         body: l10n.shoppingEmptyBody,
                         actionLabel: l10n.addItemTitle,
-                        onAction: () => _showAddItem(context, ref),
+                        onAction: () => _showAddItem(context, ref, apiMode),
                       ),
                     )
                   else ...[
@@ -190,12 +314,18 @@ class ShoppingScreen extends ConsumerWidget {
                                   i++) ...[
                                 _ShoppingRow(
                                   item: grouped[category]![i],
-                                  onToggle: () => ref
-                                      .read(shoppingProvider.notifier)
-                                      .toggle(grouped[category]![i].id),
-                                  onDelete: () => ref
-                                      .read(shoppingProvider.notifier)
-                                      .remove(grouped[category]![i].id),
+                                  onToggle: () => _toggle(
+                                    context,
+                                    ref,
+                                    apiMode,
+                                    grouped[category]![i],
+                                  ),
+                                  onDelete: () => _remove(
+                                    context,
+                                    ref,
+                                    apiMode,
+                                    grouped[category]![i],
+                                  ),
                                 ),
                                 if (i != grouped[category]!.length - 1)
                                   const Divider(height: 1),

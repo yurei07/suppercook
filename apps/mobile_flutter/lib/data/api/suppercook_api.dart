@@ -82,4 +82,49 @@ class SuppercookApi {
         ),
     ];
   }
+
+  Future<List<ApiShoppingItem>> fetchShopping() async {
+    final response = await _dio.get<List<dynamic>>('/shopping');
+    final data = response.data ?? const <dynamic>[];
+    return [
+      for (final item in data)
+        ApiShoppingItem.fromJson(Map<String, dynamic>.from(item as Map)),
+    ];
+  }
+
+  Future<void> addShoppingItem({
+    required String name,
+    required double quantity,
+    required String unit,
+  }) async {
+    await _dio.post<dynamic>(
+      '/shopping/items',
+      data: {'name': name, 'quantity': quantity, 'unit': unit},
+    );
+  }
+
+  Future<void> addMissingFromRecipe({
+    required List<String> missingIngredients,
+    String? recipeId,
+  }) async {
+    await _dio.post<dynamic>(
+      '/shopping/from-recipe',
+      data: {
+        'missingIngredients': missingIngredients,
+        'recipeId': ?recipeId,
+      },
+    );
+  }
+
+  Future<void> toggleShoppingItem(String id, bool checked) async {
+    await _dio.patch<dynamic>('/shopping/items/$id', data: {'checked': checked});
+  }
+
+  Future<void> removeShoppingItem(String id) async {
+    await _dio.delete<dynamic>('/shopping/items/$id');
+  }
+
+  Future<void> clearCheckedShopping() async {
+    await _dio.delete<dynamic>('/shopping/checked');
+  }
 }
