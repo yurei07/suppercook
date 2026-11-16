@@ -24,7 +24,7 @@ export class RecipesService {
    * и отмечает, каких ингредиентов не хватает.
    */
   async suggest(userId: string, dto: SuggestRecipesDto): Promise<Recipe[]> {
-    const inventory = this.inventory.list(userId);
+    const inventory = await this.inventory.list(userId);
 
     const input = {
       context: {

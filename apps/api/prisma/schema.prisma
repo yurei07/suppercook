@@ -1,0 +1,39 @@
+// Suppercook database schema.
+//
+// Local development uses SQLite (zero setup, file in prisma/dev.db).
+// Production should switch the datasource provider to postgresql and point
+// DATABASE_URL at a real server — the models stay the same.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model InventoryItem {
+  id       String   @id
+  userId   String
+  name     String
+  quantity Float
+  unit     String
+  source   String   @default("manual")
+  addedAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ShoppingItem {
+  id        String   @id
+  userId    String
+  name      String
+  quantity  Float
+  unit      String
+  checked   Boolean  @default(false)
+  // JSON array of recipe ids, e.g. ["r1","r2"]. SQLite has no array column.
+  recipeIds String   @default("[]")
+
+  @@index([userId])
+}

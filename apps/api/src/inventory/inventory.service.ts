@@ -1,70 +1,100 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  InventoryItem as InventoryItemRow,
+  Prisma,
+} from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { InventoryItem } from '../common/domain.types';
+import { InventoryItem, Unit } from '../common/domain.types';
 import { normalizeIngredientName } from '../common/units';
+import { PrismaService } from '../prisma/prisma.service';
 import { AddInventoryItemDto, UpdateInventoryItemDto } from './inventory.dto';
 
 /**
- * Инвентарь пользователя.
- *
- * MVP: хранение в памяти (Map<userId, InventoryItem[]>).
- * Замена на PostgreSQL + Prisma — отдельная задача v1.1,
- * интерфейс сервиса при этом не меняется.
+ * Инвентарь пользователя. Хранится в базе (SQLite локально, PostgreSQL в проде).
+ * Дубль продукта не создаётся: при совпадении name+unit количество суммируется.
  */
 @Injectable()
 export class InventoryService {
-  private readonly store = new Map<string, InventoryItem[]>();
+  constructor(private readonly prisma: PrismaService) {}
 
-  list(userId: string): InventoryItem[] {
-    return this.store.get(userId) ?? [];
+  async list(userId: string): Promise<InventoryItem[]> {
+    const rows = await this.prisma.inventoryItem.findMany({
+      where: { userId },
+      orderBy: { addedAt: 'asc' },
+    });
+    return rows.map(toDomain);
   }
 
-  add(userId: string, dto: AddInventoryItemDto): InventoryItem[] {
-    const items = this.list(userId);
+  async add(userId: string, dto: AddInventoryItemDto): Promise<InventoryItem[]> {
     const name = normalizeIngredientName(dto.name);
 
-    // Если продукт уже есть — суммируем количество, а не создаём дубль
-    const existing = items.find(
-      (i) => i.name === name && i.unit === dto.unit,
-    );
+    const existing = await this.prisma.inventoryItem.findFirst({
+      where: { userId, name, unit: dto.unit },
+    });
 
     if (existing) {
-      existing.quantity = Math.round((existing.quantity + dto.quantity) * 100) / 100;
+      await this.prisma.inventoryItem.update({
+        where: { id: existing.id },
+        data: {
+          quantity:
+            Math.round((existing.quantity + dto.quantity) * 100) / 100,
+        },
+      });
     } else {
-      items.push({
-        id: randomUUID(),
-        name,
-        quantity: dto.quantity,
-        unit: dto.unit,
-        addedAt: new Date().toISOString(),
-        source: dto.source ?? 'manual',
+      await this.prisma.inventoryItem.create({
+        data: {
+          id: randomUUID(),
+          userId,
+          name,
+          quantity: dto.quantity,
+          unit: dto.unit,
+          source: dto.source ?? 'manual',
+        },
       });
     }
 
-    this.store.set(userId, items);
-    return items;
+    return this.list(userId);
   }
 
-  update(userId: string, id: string, dto: UpdateInventoryItemDto): InventoryItem {
-    const items = this.list(userId);
-    const item = items.find((i) => i.id === id);
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateInventoryItemDto,
+  ): Promise<InventoryItem> {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { id, userId },
+    });
     if (!item) throw new NotFoundException(`Продукт ${id} не найден`);
 
-    if (dto.name !== undefined) item.name = normalizeIngredientName(dto.name);
-    if (dto.quantity !== undefined) item.quantity = dto.quantity;
-    if (dto.unit !== undefined) item.unit = dto.unit;
+    const data: Prisma.InventoryItemUpdateInput = {};
+    if (dto.name !== undefined) data.name = normalizeIngredientName(dto.name);
+    if (dto.quantity !== undefined) data.quantity = dto.quantity;
+    if (dto.unit !== undefined) data.unit = dto.unit;
 
-    this.store.set(userId, items);
-    return item;
+    const updated = await this.prisma.inventoryItem.update({
+      where: { id },
+      data,
+    });
+    return toDomain(updated);
   }
 
-  remove(userId: string, id: string): InventoryItem[] {
-    const items = this.list(userId).filter((i) => i.id !== id);
-    this.store.set(userId, items);
-    return items;
+  async remove(userId: string, id: string): Promise<InventoryItem[]> {
+    await this.prisma.inventoryItem.deleteMany({ where: { id, userId } });
+    return this.list(userId);
   }
 
-  clear(userId: string): void {
-    this.store.delete(userId);
+  async clear(userId: string): Promise<void> {
+    await this.prisma.inventoryItem.deleteMany({ where: { userId } });
   }
+}
+
+function toDomain(row: InventoryItemRow): InventoryItem {
+  return {
+    id: row.id,
+    name: row.name,
+    quantity: row.quantity,
+    unit: row.unit as Unit,
+    addedAt: row.addedAt.toISOString(),
+    source: row.source === 'photo' ? 'photo' : 'manual',
+  };
 }

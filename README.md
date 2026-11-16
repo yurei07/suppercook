@@ -27,7 +27,7 @@ What's still fake or missing:
 - photo recognition returns a fixed demo result (Live API or not — the backend uses the mock provider without an OpenAI key)
 - the AI chat answers from a template
 - login is a stub, there are no real accounts
-- the API keeps everything in memory; restarting it clears the data
+- the API persists to a local SQLite file; PostgreSQL is the production target
 - Live API only covers recipes and photo recognition so far; the shopping list and planner are still local
 - pantry sync with the API is one-way (local → backend) before recipe generation
 - community features aren't started
@@ -65,6 +65,7 @@ Android SDK setup and APK signing notes are in
 
 ```bash
 npm install
+npm run prisma:push   # creates the SQLite dev database (first run only)
 npm run api
 ```
 
@@ -105,7 +106,7 @@ docs/               product notes and early architecture docs (mostly Russian)
 
 **Look.** Dark background, orange accent, DM Serif Display for dish names and Inter for UI. Fonts are bundled, not downloaded at runtime. The food photos are from Unsplash and are only demo content — see [`apps/mobile_flutter/assets/ATTRIBUTION.md`](apps/mobile_flutter/assets/ATTRIBUTION.md).
 
-**API.** NestJS with DTO validation and zod checks on model output. Recipes get an `image` key that the client maps to a local asset. Allergens are filtered in code, not in the prompt; missing ingredients are calculated on the server. The cache key includes locale and diet. Storage is still in-memory, so this is not production-ready.
+**API.** NestJS with DTO validation and zod checks on model output. Recipes get an `image` key that the client maps to a local asset. Allergens are filtered in code, not in the prompt; missing ingredients are calculated on the server. The cache key includes locale and diet. Inventory and the shopping list live in a SQLite database through Prisma (PostgreSQL is the production target), so data survives restarts.
 
 A few endpoints you'll probably touch first:
 
@@ -151,9 +152,9 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 ## Next
 
 - [x] API client/repository for recipes and photo recognition, with a Demo / Live API switch.
+- [x] Prisma + SQLite persistence for inventory and shopping list (Postgres is the production target).
 - [ ] Sync the shopping list and planner with the API, and add proper offline handling.
-- [ ] Move the API from in-memory maps to PostgreSQL + Prisma.
-- [ ] Add real authentication and remove `x-user-id`.
+- [ ] Move the API to PostgreSQL + real authentication.
 - [ ] Connect OpenAI vision and generation with budget limits.
 - [ ] Add CI and a proper release keystore.
 - [ ] Community features: recipe feed, chat, moderation.

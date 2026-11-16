@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ShoppingItem as ShoppingItemRow } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { ShoppingListItem, Unit } from '../common/domain.types';
 import { normalizeIngredientName, toGrams } from '../common/units';
 import { InventoryService } from '../inventory/inventory.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { AddFromRecipeDto, AddShoppingItemDto } from './shopping.dto';
 
 /**
@@ -17,115 +19,152 @@ import { AddFromRecipeDto, AddShoppingItemDto } from './shopping.dto';
  */
 @Injectable()
 export class ShoppingService {
-  private readonly store = new Map<string, ShoppingListItem[]>();
+  constructor(
+    private readonly inventory: InventoryService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  constructor(private readonly inventory: InventoryService) {}
-
-  list(userId: string): ShoppingListItem[] {
-    return this.store.get(userId) ?? [];
+  async list(userId: string): Promise<ShoppingListItem[]> {
+    const rows = await this.prisma.shoppingItem.findMany({
+      where: { userId },
+      orderBy: { name: 'asc' },
+    });
+    return rows.map(toDomain);
   }
 
   /** Ручное добавление */
-  add(userId: string, dto: AddShoppingItemDto): ShoppingListItem[] {
-    const items = this.list(userId);
+  async add(
+    userId: string,
+    dto: AddShoppingItemDto,
+  ): Promise<ShoppingListItem[]> {
     const name = normalizeIngredientName(dto.name);
 
-    const existing = items.find((i) => i.name === name && i.unit === dto.unit);
+    const existing = await this.prisma.shoppingItem.findFirst({
+      where: { userId, name, unit: dto.unit },
+    });
     if (existing) {
-      existing.quantity = Math.round((existing.quantity + dto.quantity) * 100) / 100;
+      await this.prisma.shoppingItem.update({
+        where: { id: existing.id },
+        data: {
+          quantity: Math.round((existing.quantity + dto.quantity) * 100) / 100,
+        },
+      });
     } else {
-      items.push({
-        id: randomUUID(),
-        name,
-        quantity: dto.quantity,
-        unit: dto.unit,
-        recipeIds: [],
-        checked: false,
+      await this.prisma.shoppingItem.create({
+        data: {
+          id: randomUUID(),
+          userId,
+          name,
+          quantity: dto.quantity,
+          unit: dto.unit,
+          recipeIds: '[]',
+        },
       });
     }
 
-    this.store.set(userId, items);
-    return items;
+    return this.list(userId);
   }
 
   /**
    * Добавление недостающего из рецепта.
    * Строки вида "сыр (150 g)" / "сыр (не хватает 80 g)" парсим здесь.
    */
-  addFromRecipe(userId: string, dto: AddFromRecipeDto): ShoppingListItem[] {
-    const items = this.list(userId);
-
+  async addFromRecipe(
+    userId: string,
+    dto: AddFromRecipeDto,
+  ): Promise<ShoppingListItem[]> {
     for (const raw of dto.missingIngredients) {
       const parsed = this.parseMissing(raw);
       if (!parsed) continue;
 
       // ===== ГЛАВНОЕ ПРАВИЛО УМНОГО СПИСКА =====
       // Если в инвентаре уже есть нужное количество — не добавляем.
-      if (this.hasEnoughInInventory(userId, parsed.name, parsed.quantity, parsed.unit)) {
-        continue;
-      }
+      const hasEnough = await this.hasEnoughInInventory(
+        userId,
+        parsed.name,
+        parsed.quantity,
+        parsed.unit,
+      );
+      if (hasEnough) continue;
 
       const recipeId = dto.recipeId;
-      const existing = items.find(
-        (i) => i.name === parsed.name && i.unit === parsed.unit,
-      );
+      const existing = await this.prisma.shoppingItem.findFirst({
+        where: { userId, name: parsed.name, unit: parsed.unit },
+      });
 
       if (existing) {
-        // Дедупликация: добавляем количество только если этот рецепт ещё не учитывался
-        if (recipeId && existing.recipeIds.includes(recipeId)) continue;
-        if (recipeId) existing.recipeIds.push(recipeId);
-        existing.quantity =
-          Math.round((existing.quantity + parsed.quantity) * 100) / 100;
+        const recipeIds = parseRecipeIds(existing.recipeIds);
+        if (recipeId && recipeIds.includes(recipeId)) continue;
+
+        await this.prisma.shoppingItem.update({
+          where: { id: existing.id },
+          data: {
+            quantity:
+              Math.round((existing.quantity + parsed.quantity) * 100) / 100,
+            recipeIds: JSON.stringify(
+              recipeId ? [...recipeIds, recipeId] : recipeIds,
+            ),
+          },
+        });
       } else {
-        items.push({
-          id: randomUUID(),
-          name: parsed.name,
-          quantity: parsed.quantity,
-          unit: parsed.unit,
-          recipeIds: recipeId ? [recipeId] : [],
-          checked: false,
+        await this.prisma.shoppingItem.create({
+          data: {
+            id: randomUUID(),
+            userId,
+            name: parsed.name,
+            quantity: parsed.quantity,
+            unit: parsed.unit,
+            recipeIds: recipeId ? JSON.stringify([recipeId]) : '[]',
+          },
         });
       }
     }
 
-    this.store.set(userId, items);
-    return items;
+    return this.list(userId);
   }
 
-  toggle(userId: string, id: string, checked: boolean): ShoppingListItem {
-    const items = this.list(userId);
-    const item = items.find((i) => i.id === id);
-    if (item) {
-      item.checked = checked;
-      this.store.set(userId, items);
-    }
-    return item as ShoppingListItem;
+  async toggle(
+    userId: string,
+    id: string,
+    checked: boolean,
+  ): Promise<ShoppingListItem> {
+    const item = await this.prisma.shoppingItem.findFirst({
+      where: { id, userId },
+    });
+    if (!item) throw new NotFoundException(`Позиция ${id} не найдена`);
+
+    const updated = await this.prisma.shoppingItem.update({
+      where: { id },
+      data: { checked },
+    });
+    return toDomain(updated);
   }
 
-  remove(userId: string, id: string): ShoppingListItem[] {
-    const items = this.list(userId).filter((i) => i.id !== id);
-    this.store.set(userId, items);
-    return items;
+  async remove(userId: string, id: string): Promise<ShoppingListItem[]> {
+    await this.prisma.shoppingItem.deleteMany({ where: { id, userId } });
+    return this.list(userId);
   }
 
   /** Убрать всё купленное */
-  clearChecked(userId: string): ShoppingListItem[] {
-    const items = this.list(userId).filter((i) => !i.checked);
-    this.store.set(userId, items);
-    return items;
+  async clearChecked(userId: string): Promise<ShoppingListItem[]> {
+    await this.prisma.shoppingItem.deleteMany({
+      where: { userId, checked: true },
+    });
+    return this.list(userId);
   }
 
   /**
    * Проверка: есть ли в инвентаре достаточно продукта.
    * Работаем в граммах — "200 г" vs "1 шт" конвертируется по средней массе.
    */
-  private hasEnoughInInventory(
+  private async hasEnoughInInventory(
     userId: string,
     name: string,
     quantity: number,
     unit: Unit,
-  ): boolean {
-    const item = this.inventory.list(userId).find((i) => i.name === name);
+  ): Promise<boolean> {
+    const pantry = await this.inventory.list(userId);
+    const item = pantry.find((entry) => entry.name === name);
     if (!item) return false;
 
     const have = toGrams(item.name, item.quantity, item.unit);
@@ -137,7 +176,9 @@ export class ShoppingService {
   private parseMissing(
     raw: string,
   ): { name: string; quantity: number; unit: 'g' | 'ml' } | null {
-    const match = raw.match(/^(.+?)\s*\((?:не хватает\s*)?([\d.,]+)\s*(g|ml)\)$/i);
+    const match = raw.match(
+      /^(.+?)\s*\((?:не хватает\s*)?([\d.,]+)\s*(g|ml)\)$/i,
+    );
     if (match) {
       return {
         name: normalizeIngredientName(match[1]),
@@ -150,4 +191,27 @@ export class ShoppingService {
     if (!nameOnly) return null;
     return { name: normalizeIngredientName(nameOnly), quantity: 100, unit: 'g' };
   }
+}
+
+function parseRecipeIds(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((value) => typeof value === 'string');
+    }
+  } catch {
+    // повреждённая запись — считаем, что рецептов нет
+  }
+  return [];
+}
+
+function toDomain(row: ShoppingItemRow): ShoppingListItem {
+  return {
+    id: row.id,
+    name: row.name,
+    quantity: row.quantity,
+    unit: row.unit as Exclude<Unit, 'pcs'>,
+    recipeIds: parseRecipeIds(row.recipeIds),
+    checked: row.checked,
+  };
 }
