@@ -146,7 +146,7 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 - The planner is demo content; there's no "generate a balanced week" logic yet.
 - The recipe catalog is small and hand-written.
 - Live API mode uses plain HTTP for local development; production needs HTTPS and a proper network security config.
-- No CI yet. Tests are run locally.
+- CI runs on GitHub Actions: API build + tests, Flutter analyze + tests.
 - I've only run the app on Linux so far. The Android APK is built but hasn't been tested on a physical device yet.
 
 ## Next
@@ -155,9 +155,10 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 - [x] Prisma + SQLite persistence for inventory and shopping list (Postgres is the production target).
 - [x] Shopping list syncs with the API in Live API mode (read, add, toggle, clear).
 - [ ] Sync the planner with the API and add proper offline handling.
+- [x] GitHub Actions CI (API tests, Flutter analyze and tests).
 - [ ] Move the API to PostgreSQL + real authentication.
 - [ ] Connect OpenAI vision and generation with budget limits.
-- [ ] Add CI and a proper release keystore.
+- [ ] Release keystore and signed builds.
 - [ ] Community features: recipe feed, chat, moderation.
 
 ## Credits

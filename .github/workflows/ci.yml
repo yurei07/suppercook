@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    name: API — build and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate -w @suppercook/api
+      - name: Build
+        run: npm run build:api
+      - name: Test
+        run: npm test -w @suppercook/api
+
+  flutter:
+    name: Flutter — analyze and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+      - name: Install dependencies
+        working-directory: apps/mobile_flutter
+        run: flutter pub get
+      - name: Generate localizations
+        working-directory: apps/mobile_flutter
+        run: flutter gen-l10n
+      - name: Analyze
+        working-directory: apps/mobile_flutter
+        run: flutter analyze
+      - name: Test
+        working-directory: apps/mobile_flutter
+        run: flutter test
