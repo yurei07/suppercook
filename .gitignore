@@ -41,6 +41,9 @@ apps/api/prisma/*.db-journal
 apps/api/prisma/*.db-wal
 apps/api/prisma/*.db-shm
 
+# NixOS: local prisma engines symlink (see apps/api/.env.example)
+apps/api/.nix-engines
+
 # Native (legacy Expo app only — Flutter platform folders must be tracked)
 apps/mobile/android/
 apps/mobile/ios/

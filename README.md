@@ -26,7 +26,7 @@ What's still fake or missing:
 
 - photo recognition returns a fixed demo result (Live API or not — the backend uses the mock provider without an OpenAI key)
 - the AI chat answers from a template
-- login is a stub, there are no real accounts
+- the API has real email/password accounts with JWT now, but the Flutter login screen is still a stub (it keeps using the legacy `x-user-id` header, which the API still accepts)
 - the API persists to a local SQLite file; PostgreSQL is the production target
 - Live API covers recipes, photo recognition and the shopping list; the planner is still local
 - pantry sync with the API is one-way (local → backend) before recipe generation
@@ -69,7 +69,9 @@ npm run prisma:push   # creates the SQLite dev database (first run only)
 npm run api
 ```
 
-It starts on `http://localhost:3000`. No OpenAI key is required; without one it uses the mock provider. If you want real generation, copy `apps/api/.env.example` to `.env`, set `AI_PROVIDER=openai` and add your key.
+It starts on `http://localhost:3000`. No OpenAI key is required; without one it uses the mock provider. If you want real generation, copy `apps/api/.env.example` to `.env`, set `AI_PROVIDER=openai` and add your key. Set `JWT_SECRET` in `.env` before exposing the API anywhere beyond localhost.
+
+NixOS users: `nix-shell` at the repo root gives you Node 24 plus the Prisma engines binaries.prisma.sh doesn't ship for nixos (see `shell.nix`).
 
 Then open the app, go to **Profile → Data source → Live API**. Recipe suggestions and photo recognition will go through the backend. The Android emulator reaches your machine at `10.0.2.2`; for a physical phone build with your LAN address:
 
@@ -114,6 +116,10 @@ A few endpoints you'll probably touch first:
 
 | Method | Path | What it does |
 |---|---|---|
+| GET | `/health` | status + DB check |
+| POST | `/auth/register` | create an account, returns a JWT |
+| POST | `/auth/login` | email + password → JWT |
+| GET | `/auth/me` | current profile (Bearer token) |
 | GET | `/inventory` | list pantry items |
 | POST | `/inventory` | add an item |
 | PATCH / DELETE | `/inventory/:id` | update / remove |
@@ -123,7 +129,7 @@ A few endpoints you'll probably touch first:
 | POST | `/shopping/from-recipe` | add only missing ingredients |
 | PATCH / DELETE | `/shopping/items/:id` | toggle checked / remove |
 
-`x-user-id` is a temporary stand-in for authentication. Pass `locale: "en"` or `"de"` to recognition and recipe requests.
+Authentication: send `Authorization: Bearer <jwt>` from `/auth/register` or `/auth/login`. The legacy `x-user-id` header is still accepted while the client migrates. AI endpoints (`/recipes/suggest`, `/inventory/recognize`) have a per-user daily limit (`AI_DAILY_LIMIT`, default 20) and return 429 when it's exhausted; rate limiting is 120 req/min globally and 10 req/min on AI and auth endpoints.
 
 ## Tests
 
@@ -137,7 +143,7 @@ flutter analyze
 flutter test
 ```
 
-The backend currently has 24 tests. The Flutter side covers live language switching and local persistence of the pantry, shopping list and planner.
+The backend currently has 43 tests (auth, quota, services, units, images). The Flutter side covers live language switching and local persistence of the pantry, shopping list and planner.
 
 ## Known rough edges
 
@@ -156,8 +162,10 @@ The backend currently has 24 tests. The Flutter side covers live language switch
 - [x] Shopping list syncs with the API in Live API mode (read, add, toggle, clear).
 - [ ] Sync the planner with the API and add proper offline handling.
 - [x] GitHub Actions CI (API tests, Flutter analyze and tests).
-- [ ] Move the API to PostgreSQL + real authentication.
-- [ ] Connect OpenAI vision and generation with budget limits.
+- [x] Email/password auth with JWT + per-user AI quota and rate limiting.
+- [x] Flutter client: switch auth to real tokens and register accounts.
+- [ ] Move the API to PostgreSQL.
+- [ ] Connect OpenAI vision and generation with token cost tracking.
 - [ ] Release keystore and signed builds.
 - [ ] Community features: recipe feed, chat, moderation.
 

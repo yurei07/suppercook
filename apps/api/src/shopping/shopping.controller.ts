@@ -3,13 +3,13 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
+import { CurrentUser } from '../auth/current-user.decorator';
 import {
   AddFromRecipeDto,
   AddShoppingItemDto,
@@ -22,45 +22,47 @@ export class ShoppingController {
   constructor(private readonly shopping: ShoppingService) {}
 
   @Get()
-  list(@Headers() headers: Record<string, string>) {
-    return this.shopping.list(this.userId(headers));
+  list(@CurrentUser() user: { userId: string }) {
+    return this.shopping.list(user.userId);
   }
 
   @Post('items')
-  add(@Body() dto: AddShoppingItemDto, @Headers() headers: Record<string, string>) {
-    return this.shopping.add(this.userId(headers), dto);
+  add(
+    @Body() dto: AddShoppingItemDto,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.shopping.add(user.userId, dto);
   }
 
   /** Кнопка «Добавить недостающее в список покупок» на экране рецепта */
   @Post('from-recipe')
-  addFromRecipe(@Body() dto: AddFromRecipeDto, @Headers() headers: Record<string, string>) {
-    return this.shopping.addFromRecipe(this.userId(headers), dto);
+  addFromRecipe(
+    @Body() dto: AddFromRecipeDto,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.shopping.addFromRecipe(user.userId, dto);
   }
 
   @Patch('items/:id')
   toggle(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ToggleShoppingItemDto,
-    @Headers() headers: Record<string, string>,
+    @CurrentUser() user: { userId: string },
   ) {
-    return this.shopping.toggle(this.userId(headers), id, dto.checked);
+    return this.shopping.toggle(user.userId, id, dto.checked);
   }
 
   @Delete('items/:id')
   remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @Headers() headers: Record<string, string>,
+    @CurrentUser() user: { userId: string },
   ) {
-    return this.shopping.remove(this.userId(headers), id);
+    return this.shopping.remove(user.userId, id);
   }
 
   @Delete('checked')
   @HttpCode(204)
-  clearChecked(@Headers() headers: Record<string, string>): void {
-    this.shopping.clearChecked(this.userId(headers));
-  }
-
-  private userId(headers: Record<string, string>): string {
-    return headers['x-user-id'] ?? 'demo-user';
+  clearChecked(@CurrentUser() user: { userId: string }): void {
+    this.shopping.clearChecked(user.userId);
   }
 }

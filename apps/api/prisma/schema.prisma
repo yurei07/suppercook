@@ -13,6 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Аккаунт из /auth/register. userId в InventoryItem/ShoppingItem/AiUsage
+// остаётся строкой без FK — так проще с legacy-заголовком x-user-id
+// и тестами; связи ужесточим при переезде на PostgreSQL.
+model User {
+  id           String   @id
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
 model InventoryItem {
   id       String   @id
   userId   String
@@ -36,4 +46,15 @@ model ShoppingItem {
   recipeIds String   @default("[]")
 
   @@index([userId])
+}
+
+// Счётчик AI-генераций на пользователя за день (ключ userId + YYYY-MM-DD UTC).
+// Дневной лимит задаётся AI_DAILY_LIMIT, см. src/ai/quota.service.ts.
+model AiUsage {
+  id     String @id
+  userId String
+  day    String
+  count  Int    @default(0)
+
+  @@unique([userId, day])
 }
