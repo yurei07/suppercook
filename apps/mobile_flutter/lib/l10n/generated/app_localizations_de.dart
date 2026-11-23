@@ -677,6 +677,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get savedRecipes => 'Gespeicherte Rezepte';
 
   @override
+  String get savedTitle => 'Gespeicherte Rezepte';
+
+  @override
+  String get savedSubtitle => 'Alles, was du gemerkt hast';
+
+  @override
+  String get savedEmpty =>
+      'Noch nichts gespeichert. Tippe auf das Lesezeichen bei einem Rezept.';
+
+  @override
   String get settingsSection => 'Einstellungen';
 
   @override

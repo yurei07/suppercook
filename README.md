@@ -19,6 +19,7 @@ What works today:
 - the weekly planner syncs with the API in Live API mode (meals push up as full recipe snapshots, so the plan survives restarts)
 - scan flow with camera/gallery on mobile and file upload on desktop
 - recipe list, recipe detail, cooking mode and per-serving macros
+- saved recipes (favorites) with a dedicated screen, synced with the API as full recipe snapshots; cooking history is recorded on the server too
 - EN/DE localization with instant switching
 - email/password accounts: register and sign in against the API, the session token is stored on the device and every Live API request carries it as a Bearer token
 - Live API mode for recipe suggestions, photo recognition and the shopping list (Profile → Data source)
@@ -29,6 +30,7 @@ What's still fake or missing:
 - photo recognition returns a fixed demo result (Live API or not — the backend uses the mock provider without an OpenAI key)
 - the AI chat answers from a template
 - sign-in with Apple/Google isn't there at all (the fake buttons got removed until it's real); the JWT lives in SharedPreferences rather than the system keystore
+- the cooking history is a counter plus server entries; there's no per-day history UI yet
 - the API persists to a local SQLite file; PostgreSQL is the production target
 - Live API covers recipes, photo recognition, the shopping list and the planner; offline edits made while the API is down are not merged back yet
 - pantry sync is two-way in Live API mode, but the merge is additive: items missing locally are pulled from the server, existing ones are never overwritten
@@ -127,6 +129,10 @@ A few endpoints you'll probably touch first:
 | PATCH / DELETE | `/inventory/:id` | update / remove |
 | POST | `/inventory/recognize` | photo → ingredient suggestions |
 | POST | `/recipes/suggest` | recipes from the pantry |
+| GET | `/recipes/saved` | saved recipes (full snapshots) |
+| PUT / DELETE | `/recipes/saved/:recipeId` | save / unsave |
+| GET | `/recipes/cooked` | cooking history |
+| POST | `/recipes/cooked` | record a cooked meal |
 | GET | `/planner?week=YYYY-MM-DD` | meals for the week |
 | PUT | `/planner/meals` | put a recipe into a day slot |
 | PUT | `/planner` | replace the whole week |
@@ -149,7 +155,7 @@ flutter analyze
 flutter test
 ```
 
-The backend currently has 43 tests (auth, quota, services, units, images). The Flutter side covers live language switching and local persistence of the pantry, shopping list and planner.
+The backend currently has 59 tests (auth, quota, planner, saved recipes, services, units, images). The Flutter side covers live language switching, local persistence and the sync providers (25 tests).
 
 ## Known rough edges
 

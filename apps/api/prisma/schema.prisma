@@ -75,3 +75,27 @@ model PlannedMeal {
   @@unique([userId, week, day, slot])
   @@index([userId, week])
 }
+
+// Сохранённый рецепт (избранное). recipeJson — тот же полный снимок
+// с клиента, что и в PlannedMeal: рецепт может существовать только тут.
+model SavedRecipe {
+  id         String   @id
+  userId     String
+  recipeId   String
+  recipeJson String
+  savedAt    DateTime @default(now())
+
+  @@unique([userId, recipeId])
+  @@index([userId])
+}
+
+// История приготовленного: по одной записи на каждое приготовление.
+model CookedEntry {
+  id       String   @id
+  userId   String
+  recipeId String
+  title    String   @default("")
+  cookedAt DateTime @default(now())
+
+  @@index([userId])
+}

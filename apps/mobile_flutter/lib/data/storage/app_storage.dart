@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/app_providers.dart';
 import '../models/ingredient.dart';
+import '../models/recipe.dart';
 import '../models/shopping_item.dart';
 
 /// Small JSON-backed persistence layer for the local-first MVP.
@@ -21,6 +22,7 @@ class AppStorage {
   static const _pantryKey = 'pantry_items_v1';
   static const _shoppingKey = 'shopping_items_v1';
   static const _plannerKey = 'planner_v1';
+  static const _savedRecipesKey = 'saved_recipes_v1';
 
   // ---------------------------------------------------------------------------
   // Pantry
@@ -70,6 +72,37 @@ class AppStorage {
       _prefs.setString(
         _shoppingKey,
         jsonEncode([for (final item in items) item.toJson()]),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Saved recipes (favorites) — recipeId → полный снимок Recipe
+  // ---------------------------------------------------------------------------
+  Map<String, Recipe>? readSavedRecipes() {
+    final raw = _prefs.getString(_savedRecipesKey);
+    if (raw == null) return null;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return {
+        for (final entry in decoded.entries)
+          entry.key: Recipe.fromJson(
+            Map<String, dynamic>.from(entry.value as Map),
+          ),
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void writeSavedRecipes(Map<String, Recipe> items) {
+    unawaited(
+      _prefs.setString(
+        _savedRecipesKey,
+        jsonEncode({
+          for (final entry in items.entries)
+            entry.key: entry.value.toJson(),
+        }),
       ),
     );
   }

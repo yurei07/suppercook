@@ -172,4 +172,42 @@ class SuppercookApi {
       queryParameters: {'week': week, 'day': day, 'slot': slot},
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Saved recipes + cooked history
+  // ---------------------------------------------------------------------------
+
+  Future<List<dynamic>> fetchSavedRecipes() async {
+    final response = await _dio.get<List<dynamic>>('/recipes/saved');
+    return response.data ?? const <dynamic>[];
+  }
+
+  Future<void> saveRecipe({
+    required String recipeId,
+    required Map<String, dynamic> recipe,
+  }) async {
+    await _dio.put<dynamic>(
+      '/recipes/saved/$recipeId',
+      data: {'recipe': recipe},
+    );
+  }
+
+  Future<void> unsaveRecipe(String recipeId) async {
+    await _dio.delete<dynamic>('/recipes/saved/$recipeId');
+  }
+
+  Future<List<dynamic>> fetchCookedHistory() async {
+    final response = await _dio.get<List<dynamic>>('/recipes/cooked');
+    return response.data ?? const <dynamic>[];
+  }
+
+  Future<void> markCooked({
+    required String recipeId,
+    required String title,
+  }) async {
+    await _dio.post<dynamic>(
+      '/recipes/cooked',
+      data: {'recipeId': recipeId, 'title': title},
+    );
+  }
 }

@@ -12,6 +12,7 @@ import '../../../data/providers/pantry_provider.dart';
 import '../../../data/providers/api_providers.dart';
 import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/recipe_provider.dart';
+import '../../../data/providers/saved_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
@@ -61,6 +62,9 @@ class RecipeDetailScreen extends ConsumerWidget {
         _Hero(
           recipe: recipe,
           match: match,
+          saved: ref.watch(savedRecipesProvider).containsKey(recipe.id),
+          onToggleSaved: () =>
+              ref.read(savedRecipesProvider.notifier).toggle(recipe),
           onBack: () => context.pop(),
         ),
         Padding(
@@ -235,11 +239,15 @@ class RecipeDetailScreen extends ConsumerWidget {
 class _Hero extends StatelessWidget {
   final Recipe recipe;
   final int match;
+  final bool saved;
+  final VoidCallback onToggleSaved;
   final VoidCallback onBack;
 
   const _Hero({
     required this.recipe,
     required this.match,
+    required this.saved,
+    required this.onToggleSaved,
     required this.onBack,
   });
 
@@ -280,9 +288,11 @@ class _Hero extends StatelessWidget {
                 top: AppSpacing.md,
                 right: AppSpacing.md,
                 child: AppIconButton(
-                  icon: Icons.bookmark_border_rounded,
+                  icon: saved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
                   backgroundColor: Colors.black.withValues(alpha: 0.45),
-                  onPressed: () {},
+                  onPressed: onToggleSaved,
                 ),
               ),
               Positioned(

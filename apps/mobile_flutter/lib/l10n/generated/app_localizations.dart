@@ -1292,6 +1292,24 @@ abstract class AppLocalizations {
   /// **'Saved recipes'**
   String get savedRecipes;
 
+  /// No description provided for @savedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved recipes'**
+  String get savedTitle;
+
+  /// No description provided for @savedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you bookmarked lives here'**
+  String get savedSubtitle;
+
+  /// No description provided for @savedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet. Tap the bookmark on any recipe to keep it here.'**
+  String get savedEmpty;
+
   /// No description provided for @settingsSection.
   ///
   /// In en, this message translates to:

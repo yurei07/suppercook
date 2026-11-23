@@ -201,6 +201,51 @@ class ApiRepository {
     await _api.clearPlannerMeal(week: week, day: day, slot: slot);
   }
 
+  // ---------------------------------------------------------------------------
+  // Saved recipes (favorites) + cooked history
+  // ---------------------------------------------------------------------------
+
+  /// Избранное пользователя: recipeId → полный снимок Recipe.
+  Future<Map<String, Recipe>> fetchSavedRecipes() async {
+    try {
+      final items = await _api.fetchSavedRecipes();
+      final result = <String, Recipe>{};
+      for (final item in items) {
+        final map = Map<String, dynamic>.from(item as Map);
+        final recipe = Recipe.fromJson(
+          Map<String, dynamic>.from(map['recipe'] as Map? ?? const {}),
+        );
+        final id = map['recipeId'] as String? ?? recipe.id;
+        if (id.isNotEmpty) result[id] = recipe;
+      }
+      return result;
+    } catch (error) {
+      throw ApiException('Could not load saved recipes', error);
+    }
+  }
+
+  Future<void> saveRecipe(Recipe recipe) async {
+    await _api.saveRecipe(recipeId: recipe.id, recipe: recipe.toJson());
+  }
+
+  Future<void> unsaveRecipe(String recipeId) async {
+    await _api.unsaveRecipe(recipeId);
+  }
+
+  Future<void> markCooked({required String recipeId, required String title}) async {
+    await _api.markCooked(recipeId: recipeId, title: title);
+  }
+
+  /// Сколько приготовлений записано на сервере (для сверки счётчика).
+  Future<int> fetchCookedCount() async {
+    try {
+      final history = await _api.fetchCookedHistory();
+      return history.length;
+    } catch (error) {
+      throw ApiException('Could not load the cooking history', error);
+    }
+  }
+
   String _missingString(Ingredient item, Locale locale) {
     final (quantity, unit) = _apiQuantity(item);
     final amount = quantity == quantity.roundToDouble()

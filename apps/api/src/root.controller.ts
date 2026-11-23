@@ -25,6 +25,13 @@ export class RootController {
           'POST /inventory/recognize',
         ],
         recipes: ['POST /recipes/suggest'],
+        saved: [
+          'GET /recipes/saved',
+          'PUT /recipes/saved/:recipeId',
+          'DELETE /recipes/saved/:recipeId',
+          'GET /recipes/cooked',
+          'POST /recipes/cooked',
+        ],
         planner: [
           'GET /planner?week=YYYY-MM-DD',
           'PUT /planner/meals',

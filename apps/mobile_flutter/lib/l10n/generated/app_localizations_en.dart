@@ -672,6 +672,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedRecipes => 'Saved recipes';
 
   @override
+  String get savedTitle => 'Saved recipes';
+
+  @override
+  String get savedSubtitle => 'Everything you bookmarked lives here';
+
+  @override
+  String get savedEmpty =>
+      'Nothing saved yet. Tap the bookmark on any recipe to keep it here.';
+
+  @override
   String get settingsSection => 'Preferences';
 
   @override

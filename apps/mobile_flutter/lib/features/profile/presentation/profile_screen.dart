@@ -14,6 +14,7 @@ import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/pantry_provider.dart';
 import '../../../data/providers/planner_provider.dart';
 import '../../../data/providers/recipe_provider.dart';
+import '../../../data/providers/saved_provider.dart';
 import '../../../data/providers/shopping_provider.dart';
 import '../../../data/providers/stats_provider.dart';
 import '../../../data/providers/user_provider.dart';
@@ -267,6 +268,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final locale = ref.watch(localeProvider);
     final source = ref.watch(dataSourceProvider);
     final session = ref.watch(authProvider);
+    final saved = ref.watch(savedRecipesProvider);
+    // Live API режим: сверяем счётчик приготовлений с историей на сервере.
+    ref.watch(cookedSyncProvider);
     final initial = user.name.trim().isEmpty
         ? 'A'
         : user.name.trim().characters.first.toUpperCase();
@@ -347,7 +351,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
-                        child: _StatCard(value: '4', label: l10n.savedRecipes),
+                        child: _StatCard(
+                          value: '${saved.length}',
+                          label: l10n.savedRecipes,
+                          onTap: () => context.push('/saved'),
+                        ),
                       ),
                     ],
                   ),
@@ -489,27 +497,32 @@ class _SectionLabel extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String value;
   final String label;
+  final VoidCallback? onTap;
 
-  const _StatCard({required this.value, required this.label});
+  const _StatCard({required this.value, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: AppTypography.serif,
-              fontSize: 30,
-              height: 1,
-              color: AppColors.accent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: AppTypography.serif,
+                fontSize: 30,
+                height: 1,
+                color: AppColors.accent,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
+            const SizedBox(height: 6),
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
       ),
     );
   }

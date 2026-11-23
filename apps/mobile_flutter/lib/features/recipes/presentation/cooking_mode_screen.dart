@@ -79,7 +79,12 @@ class _CookingModeScreenState extends ConsumerState<CookingModeScreen> {
   }
 
   Future<void> _finish() async {
-    await ref.read(recipesCookedProvider.notifier).increment();
+    final recipe = ref.read(recipeByIdProvider(widget.recipeId));
+    await ref.read(recipesCookedProvider.notifier).increment(
+          recipeId: widget.recipeId,
+          title: recipe?.title.resolve(Localizations.localeOf(context)) ??
+              widget.recipeId,
+        );
     if (!mounted) return;
 
     final l10n = context.l10n;

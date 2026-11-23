@@ -15,6 +15,7 @@ import '../features/planner/presentation/planner_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/recipes/presentation/cooking_mode_screen.dart';
 import '../features/recipes/presentation/recipe_detail_screen.dart';
+import '../features/recipes/presentation/saved_screen.dart';
 import '../features/recipes/presentation/suggestions_screen.dart';
 import '../features/scan/presentation/scan_results_screen.dart';
 import '../features/scan/presentation/scan_screen.dart';
@@ -98,6 +99,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/suggestions',
         builder: (context, state) => const SuggestionsScreen(),
+      ),
+      GoRoute(
+        path: '/saved',
+        builder: (context, state) => const SavedScreen(),
       ),
       GoRoute(
         path: '/recipe/:id',
