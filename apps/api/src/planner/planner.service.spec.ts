@@ -143,4 +143,66 @@ describe('PlannerService', () => {
       }),
     ).rejects.toThrow(BadRequestException);
   });
+
+  describe('generateWeek', () => {
+    const pool = [
+      { id: 'bf1', title: 'Pancakes', tags: ['breakfast', 'quick'] },
+      { id: 'bf2', title: 'Toast', tags: ['breakfast'] },
+      { id: 'l1', title: 'Salad', tags: ['vegan'] },
+      { id: 'd1', title: 'Pasta', tags: [] },
+      { id: 'd2', title: 'Pizza', tags: [] },
+      { id: 'd3', title: 'Soup', tags: [] },
+    ];
+
+    it('заполняет всю неделю 21 слотом и сохраняет её', async () => {
+      const meals = await service.generateWeek(userId, { week, recipes: pool as never });
+      expect(meals).toHaveLength(21);
+      expect(new Set(meals.map((m) => m.slot))).toEqual(
+        new Set(['breakfast', 'lunch', 'dinner']),
+      );
+      // Сохранена на сервере
+      expect(await service.getWeek(userId, week)).toHaveLength(21);
+    });
+
+    it('на завтрак ставит рецепты с тегом breakfast', async () => {
+      const meals = await service.generateWeek(userId, { week, recipes: pool as never });
+      const breakfasts = new Set(
+        meals.filter((m) => m.slot === 'breakfast').map((m) => m.recipeId),
+      );
+      expect(breakfasts).toEqual(new Set(['bf1', 'bf2']));
+    });
+
+    it('обед и ужин в один день не совпадают', async () => {
+      const meals = await service.generateWeek(userId, { week, recipes: pool as never });
+      for (let day = 0; day < 7; day++) {
+        const lunch = meals.find((m) => m.day === day && m.slot === 'lunch')!;
+        const dinner = meals.find((m) => m.day === day && m.slot === 'dinner')!;
+        expect(dinner.recipeId).not.toBe(lunch.recipeId);
+      }
+    });
+
+    it('ужин не повторяется два дня подряд', async () => {
+      const meals = await service.generateWeek(userId, { week, recipes: pool as never });
+      for (let day = 1; day < 7; day++) {
+        const prev = meals.find((m) => m.day === day - 1 && m.slot === 'dinner')!;
+        const curr = meals.find((m) => m.day === day && m.slot === 'dinner')!;
+        expect(curr.recipeId).not.toBe(prev.recipeId);
+      }
+    });
+
+    it('пустой пул → 400', async () => {
+      await expect(
+        service.generateWeek(userId, { week, recipes: [] as never }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('маленький пул (2 рецепта) всё равно даёт полную неделю', async () => {
+      const small = [
+        { id: 'x1', title: 'One', tags: ['breakfast'] },
+        { id: 'x2', title: 'Two', tags: [] },
+      ];
+      const meals = await service.generateWeek(userId, { week, recipes: small as never });
+      expect(meals).toHaveLength(21);
+    });
+  });
 });

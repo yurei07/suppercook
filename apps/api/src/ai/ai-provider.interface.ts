@@ -22,6 +22,13 @@ export interface RecipeGenerationInput {
   request?: string;
 }
 
+/** Результат провайдера + израсходованные токены (для учёта себестоимости). */
+export interface AiResult<T> {
+  data: T;
+  /** Суммарные токены запроса (prompt + completion). Mock отдаёт 0. */
+  tokensUsed: number;
+}
+
 /**
  * Единый интерфейс AI-провайдера.
  * Меняем OpenAI на Anthropic (или на свою модель) — не трогая остальной код.
@@ -34,8 +41,10 @@ export interface AiProvider {
     imageBase64: string,
     mimeType: string,
     locale: Locale,
-  ): Promise<RecognitionOutput>;
+  ): Promise<AiResult<RecognitionOutput>>;
 
   /** Генерация рецептов строго из имеющихся ингредиентов */
-  generateRecipes(input: RecipeGenerationInput): Promise<GeneratedRecipesOutput>;
+  generateRecipes(
+    input: RecipeGenerationInput,
+  ): Promise<AiResult<GeneratedRecipesOutput>>;
 }

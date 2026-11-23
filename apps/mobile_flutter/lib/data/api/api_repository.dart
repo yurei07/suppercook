@@ -201,6 +201,31 @@ class ApiRepository {
     await _api.clearPlannerMeal(week: week, day: day, slot: slot);
   }
 
+  /// Серверная генерация сбалансированной недели из пула рецептов.
+  Future<List<PlannedMealSlot>> generateWeekPlan(
+    String week,
+    List<Recipe> pool,
+  ) async {
+    try {
+      final meals = await _api.generateWeek(
+        week: week,
+        recipes: [for (final recipe in pool) recipe.toJson()],
+      );
+      return [
+        for (final meal in meals)
+          PlannedMealSlot(
+            day: meal['day'] as int? ?? 0,
+            slot: meal['slot'] as String? ?? 'dinner',
+            recipe: Recipe.fromJson(
+              Map<String, dynamic>.from(meal['recipe'] as Map? ?? const {}),
+            ),
+          ),
+      ];
+    } catch (error) {
+      throw ApiException('Could not generate the week plan', error);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Saved recipes (favorites) + cooked history
   // ---------------------------------------------------------------------------

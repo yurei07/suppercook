@@ -136,12 +136,13 @@ A few endpoints you'll probably touch first:
 | GET | `/planner?week=YYYY-MM-DD` | meals for the week |
 | PUT | `/planner/meals` | put a recipe into a day slot |
 | PUT | `/planner` | replace the whole week |
+| POST | `/planner/generate` | build a balanced week from a recipe pool |
 | DELETE | `/planner/meals?week&day&slot` | clear a slot |
 | GET | `/shopping` | shopping list |
 | POST | `/shopping/from-recipe` | add only missing ingredients |
 | PATCH / DELETE | `/shopping/items/:id` | toggle checked / remove |
 
-Authentication: send `Authorization: Bearer <jwt>` from `/auth/register` or `/auth/login`. The legacy `x-user-id` header is still accepted for guests (the app uses it in demo mode). AI endpoints (`/recipes/suggest`, `/inventory/recognize`) have a per-user daily limit (`AI_DAILY_LIMIT`, default 20) and return 429 when it's exhausted; rate limiting is 120 req/min globally and 10 req/min on AI and auth endpoints.
+Authentication: send `Authorization: Bearer <jwt>` from `/auth/register` or `/auth/login`. The legacy `x-user-id` header is still accepted for guests (the app uses it in demo mode). AI endpoints (`/recipes/suggest`, `/inventory/recognize`) have a per-user daily limit (`AI_DAILY_LIMIT`, default 20) and return 429 when it's exhausted; token usage per user per day is tracked in the database, and rate limiting is 120 req/min globally and 10 req/min on AI and auth endpoints.
 
 ## Tests
 
@@ -155,13 +156,13 @@ flutter analyze
 flutter test
 ```
 
-The backend currently has 59 tests (auth, quota, planner, saved recipes, services, units, images). The Flutter side covers live language switching, local persistence and the sync providers (25 tests).
+The backend currently has 67 tests (auth, quota, planner, saved recipes, services, units, images) and an eslint gate in CI. The Flutter side covers live language switching, local persistence and the sync providers (25 tests).
 
 ## Known rough edges
 
 - The universal APK includes three ABIs and is larger than it needs to be. Split APKs will fix that later.
 - The Linux build has no camera support, so scanning means uploading a file.
-- The planner is demo content; there's no "generate a balanced week" logic yet.
+- The planner now generates for real: in Live API mode the server composes a balanced week from your recipe pool (breakfast-tagged recipes for breakfast, no same-day lunch/dinner duplicates, no back-to-back dinners)
 - The recipe catalog is small and hand-written.
 - Live API mode uses plain HTTP for local development; production needs HTTPS and a proper network security config.
 - CI runs on GitHub Actions: API build + tests, Flutter analyze + tests.

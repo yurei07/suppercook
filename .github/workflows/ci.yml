@@ -19,6 +19,8 @@ jobs:
         run: npm ci
       - name: Generate Prisma client
         run: npm run prisma:generate -w @suppercook/api
+      - name: Lint
+        run: npm run lint -w @suppercook/api
       - name: Build
         run: npm run build:api
       - name: Test

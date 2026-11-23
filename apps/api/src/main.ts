@@ -15,7 +15,6 @@ async function bootstrap(): Promise<void> {
   app.use(helmet());
 
   if (!isJwtSecretConfigured()) {
-    // eslint-disable-next-line no-console
     console.warn(
       '⚠️  JWT_SECRET не задан — используется dev-секрет. ' +
         'Для продакшена скопируйте apps/api/.env.example в .env и задайте свой.',
@@ -41,7 +40,6 @@ async function bootstrap(): Promise<void> {
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
-  // eslint-disable-next-line no-console
   console.log(`🍲 Suppercook API ready → http://localhost:${port}`);
 }
 

@@ -22,8 +22,12 @@ export class RecipesService {
   /**
    * Генерирует рецепты на основе текущего инвентаря пользователя
    * и отмечает, каких ингредиентов не хватает.
+   * Возвращает также израсходованные токены (для квоты).
    */
-  async suggest(userId: string, dto: SuggestRecipesDto): Promise<Recipe[]> {
+  async suggest(
+    userId: string,
+    dto: SuggestRecipesDto,
+  ): Promise<{ recipes: Recipe[]; tokensUsed: number }> {
     const inventory = await this.inventory.list(userId);
 
     const input = {
@@ -42,12 +46,13 @@ export class RecipesService {
       request: dto.request,
     };
 
-    const result = await this.ai.generateRecipes(input);
+    const { data, tokensUsed } = await this.ai.generateRecipes(input);
 
     // Считаем нехватку на сервере — AI это не считает (ненадёжно)
-    return result.recipes.map((r, index) =>
-      this.withMissing(r, inventory, index),
-    );
+    return {
+      recipes: data.recipes.map((r, index) => this.withMissing(r, inventory, index)),
+      tokensUsed,
+    };
   }
 
   /**

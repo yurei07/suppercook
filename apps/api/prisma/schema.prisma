@@ -55,6 +55,7 @@ model AiUsage {
   userId String
   day    String
   count  Int    @default(0)
+  tokens Int    @default(0)
 
   @@unique([userId, day])
 }

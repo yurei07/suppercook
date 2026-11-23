@@ -7,9 +7,13 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../core/extensions.dart';
+import '../../../data/api/api_repository.dart';
 import '../../../data/models/recipe.dart';
+import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/planner_provider.dart';
 import '../../../data/providers/recipe_provider.dart';
+import '../../../data/storage/app_storage.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/app_cards.dart';
@@ -87,7 +91,13 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     );
   }
 
-  void _generatePlan() {
+  Future<void> _generatePlan() async {
+    final source = ref.read(dataSourceProvider);
+    if (source == DataSource.api) {
+      await _generateViaApi();
+      return;
+    }
+
     final recipes = ref.read(recipesProvider);
     final lunch = recipes.where((recipe) => recipe.id == 'harvest_bowl').first;
     final dinners = [
@@ -120,6 +130,39 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(context.l10n.planGenerated)),
     );
+  }
+
+  /// Live API режим: сервер собирает неделю из пула известных рецептов
+  /// (локальный каталог + кэш сгенерированных) и сохраняет её.
+  Future<void> _generateViaApi() async {
+    final pool = <String, Recipe>{
+      for (final recipe in ref.read(recipesProvider)) recipe.id: recipe,
+      ...ref.read(remoteRecipesProvider),
+    };
+
+    try {
+      final meals = await ref
+          .read(apiRepositoryProvider)
+          .generateWeekPlan(
+            AppStorage.dateKey(currentWeekStart()),
+            pool.values.toList(),
+          );
+      ref
+          .read(remoteRecipesProvider.notifier)
+          .putAll([for (final meal in meals) meal.recipe]);
+      ref.read(plannerProvider.notifier).replaceAll({
+        for (final meal in meals) meal.day: {meal.slot: meal.recipe.id},
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.planGenerated)),
+      );
+    } on ApiException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.apiUnreachable)),
+      );
+    }
   }
 
   @override

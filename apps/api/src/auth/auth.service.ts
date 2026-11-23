@@ -11,7 +11,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './auth.dto';
 
 const BCRYPT_ROUNDS = 10;
-const TOKEN_TTL = '7d';
 
 @Injectable()
 export class AuthService {

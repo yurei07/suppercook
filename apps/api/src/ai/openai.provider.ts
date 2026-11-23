@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Locale } from '../common/domain.types';
-import { AiProvider, RecipeGenerationInput } from './ai-provider.interface';
+import { AiProvider, AiResult, RecipeGenerationInput } from './ai-provider.interface';
 import {
   GeneratedRecipesOutput,
   RecognitionOutput,
@@ -39,7 +39,7 @@ export class OpenAiProvider implements AiProvider {
     imageBase64: string,
     mimeType: string,
     locale: Locale,
-  ): Promise<RecognitionOutput> {
+  ): Promise<AiResult<RecognitionOutput>> {
     const language = this.languageName(locale);
     const raw = await this.chat(
       [
@@ -66,7 +66,9 @@ export class OpenAiProvider implements AiProvider {
     return raw;
   }
 
-  async generateRecipes(input: RecipeGenerationInput): Promise<GeneratedRecipesOutput> {
+  async generateRecipes(
+    input: RecipeGenerationInput,
+  ): Promise<AiResult<GeneratedRecipesOutput>> {
     const inventoryText = input.inventory
       .map((i) => `- ${i.name}: ${i.quantity} ${i.unit}`)
       .join('\n');
@@ -101,12 +103,13 @@ export class OpenAiProvider implements AiProvider {
   /**
    * Общий метод вызова с retry и zod-валидацией.
    * Невалидный JSON от модели → один повтор, затем ошибка.
+   * Возвращает результат + суммарные токены из usage.
    */
   private async chat<T>(
     messages: unknown[],
     schema: { parse: (data: unknown) => T },
     isRetry = false,
-  ): Promise<T> {
+  ): Promise<AiResult<T>> {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -133,9 +136,12 @@ export class OpenAiProvider implements AiProvider {
 
     const data = (await response.json()) as {
       choices: Array<{ message: { content: string } }>;
+      usage?: { total_tokens?: number };
     };
     const content = data.choices[0]?.message?.content;
     if (!content) throw new Error('OpenAI: пустой ответ');
+
+    const tokensUsed = data.usage?.total_tokens ?? 0;
 
     let parsed: unknown;
     try {
@@ -149,7 +155,7 @@ export class OpenAiProvider implements AiProvider {
     }
 
     // zod бросит исключение, если структура не соответствует схеме
-    return schema.parse(parsed);
+    return { data: schema.parse(parsed), tokensUsed };
   }
 
   private delay(ms: number): Promise<void> {

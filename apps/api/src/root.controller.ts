@@ -36,6 +36,7 @@ export class RootController {
           'GET /planner?week=YYYY-MM-DD',
           'PUT /planner/meals',
           'PUT /planner',
+          'POST /planner/generate',
           'DELETE /planner/meals?week&day&slot',
         ],
         shopping: [

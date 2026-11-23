@@ -25,7 +25,10 @@ export class RecipesController {
     @Body() dto: SuggestRecipesDto,
     @CurrentUser() user: { userId: string },
   ) {
-    await this.quota.consume(user.userId);
-    return this.recipes.suggest(user.userId, dto);
+    // Лимит проверяем ДО вызова, токены списываем после факта
+    await this.quota.assertWithinLimit(user.userId);
+    const { recipes, tokensUsed } = await this.recipes.suggest(user.userId, dto);
+    await this.quota.recordUsage(user.userId, tokensUsed);
+    return recipes;
   }
 }

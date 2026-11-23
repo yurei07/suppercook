@@ -1,6 +1,10 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Locale } from '../common/domain.types';
-import { AiProvider, RecipeGenerationInput } from './ai-provider.interface';
+import {
+  AiProvider,
+  AiResult,
+  RecipeGenerationInput,
+} from './ai-provider.interface';
 import { MockAiProvider } from './mock.provider';
 import { OpenAiProvider } from './openai.provider';
 import { GeneratedRecipesOutput, RecognitionOutput } from './schemas';
@@ -11,13 +15,16 @@ import { GeneratedRecipesOutput, RecognitionOutput } from './schemas';
  * Отвечает за:
  * 1. Выбор провайдера (AI_PROVIDER=openai|mock, с fallback на mock).
  * 2. Кэширование повторяющихся запросов (себестоимость).
- * 3. Логирование и трейсинг (что спрашивали, сколько стоило).
+ * 3. Логирование и трейсинг (что спрашивали, сколько стоило — токены).
  * 4. БЕЗОПАСНОСТЬ: фильтрация аллергенов КОДОМ, после генерации.
  */
 @Injectable()
 export class AiService {
   private readonly log = new Logger(AiService.name);
-  private readonly cache = new Map<string, { value: GeneratedRecipesOutput; expiresAt: number }>();
+  private readonly cache = new Map<
+    string,
+    { value: GeneratedRecipesOutput; expiresAt: number }
+  >();
   private readonly CACHE_TTL_MS = 30 * 60 * 1000; // 30 минут
 
   private readonly provider: AiProvider;
@@ -48,40 +55,52 @@ export class AiService {
     imageBase64: string,
     mimeType = 'image/jpeg',
     locale: Locale = 'en',
-  ): Promise<RecognitionOutput> {
+  ): Promise<AiResult<RecognitionOutput>> {
     const started = Date.now();
     try {
-      const result = await this.provider.recognizeIngredients(
+      const { data, tokensUsed } = await this.provider.recognizeIngredients(
         imageBase64,
         mimeType,
         locale,
       );
       this.log.log(
-        `recognize: ${result.items.length} items за ${Date.now() - started}ms (${this.provider.name})`,
+        `recognize: ${data.items.length} items за ${Date.now() - started}ms, ${tokensUsed} tokens (${this.provider.name})`,
       );
-      return result;
+      return { data, tokensUsed };
     } catch (error) {
       this.errorLog('recognize', error);
       // Fallback на mock, чтобы пользователь не видел ошибку
-      return this.mock.recognizeIngredients(imageBase64, mimeType, locale);
+      const { data } = await this.mock.recognizeIngredients(
+        imageBase64,
+        mimeType,
+        locale,
+      );
+      return { data, tokensUsed: 0 };
     }
   }
 
-  async generateRecipes(input: RecipeGenerationInput): Promise<GeneratedRecipesOutput> {
+  async generateRecipes(
+    input: RecipeGenerationInput,
+  ): Promise<AiResult<GeneratedRecipesOutput>> {
     const cacheKey = this.buildCacheKey(input);
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
-      this.log.log('generate: отдано из кэша');
-      return cached.value;
+      this.log.log('generate: отдано из кэша (0 токенов)');
+      return { data: cached.value, tokensUsed: 0 };
     }
 
     const started = Date.now();
     let result: GeneratedRecipesOutput;
+    let tokensUsed: number;
     try {
-      result = await this.provider.generateRecipes(input);
+      const response = await this.provider.generateRecipes(input);
+      result = response.data;
+      tokensUsed = response.tokensUsed;
     } catch (error) {
       this.errorLog('generate', error);
-      result = await this.mock.generateRecipes(input); // fallback
+      const fallback = await this.mock.generateRecipes(input); // fallback
+      result = fallback.data;
+      tokensUsed = 0;
     }
 
     // ===== ГЛАВНАЯ ЗАЩИТА ОТ АЛЛЕРГЕННОГО РИСКА =====
@@ -92,8 +111,8 @@ export class AiService {
     this.cache.set(cacheKey, { value: result, expiresAt: Date.now() + this.CACHE_TTL_MS });
     this.pruneCache();
 
-    this.log.log(`generate: ${result.recipes.length} рецептов за ${Date.now() - started}ms (${this.provider.name})`);
-    return result;
+    this.log.log(`generate: ${result.recipes.length} рецептов за ${Date.now() - started}ms, ${tokensUsed} tokens (${this.provider.name})`);
+    return { data: result, tokensUsed };
   }
 
   /**

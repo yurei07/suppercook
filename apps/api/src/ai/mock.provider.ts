@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Locale } from '../common/domain.types';
-import { AiProvider, RecipeGenerationInput } from './ai-provider.interface';
+import { AiProvider, AiResult, RecipeGenerationInput } from './ai-provider.interface';
 import { GeneratedRecipesOutput, RecognitionOutput } from './schemas';
 
 interface Localized {
@@ -40,37 +40,44 @@ export class MockAiProvider implements AiProvider {
     _imageBase64: string,
     _mimeType: string,
     locale: Locale,
-  ): Promise<RecognitionOutput> {
+  ): Promise<AiResult<RecognitionOutput>> {
     // Имитация задержки реальной сети
     await this.delay(400);
 
     if (locale === 'de') {
       return {
-        items: [
-          { name: 'Eier', quantity: 4, unit: 'pcs', confidence: 0.95 },
-          { name: 'Tomaten', quantity: 3, unit: 'pcs', confidence: 0.88 },
-          { name: 'Milch', quantity: 500, unit: 'ml', confidence: 0.82 },
-          { name: 'Käse', quantity: 150, unit: 'g', confidence: 0.79 },
-        ],
-        summary:
-          'Erkannt: Eier, Tomaten, Milch, Käse. Prüfe und bearbeite die Liste.',
+        data: {
+          items: [
+            { name: 'Eier', quantity: 4, unit: 'pcs', confidence: 0.95 },
+            { name: 'Tomaten', quantity: 3, unit: 'pcs', confidence: 0.88 },
+            { name: 'Milch', quantity: 500, unit: 'ml', confidence: 0.82 },
+            { name: 'Käse', quantity: 150, unit: 'g', confidence: 0.79 },
+          ],
+          summary:
+            'Erkannt: Eier, Tomaten, Milch, Käse. Prüfe und bearbeite die Liste.',
+        },
+        tokensUsed: 0,
       };
     }
 
     return {
-      items: [
-        { name: 'eggs', quantity: 4, unit: 'pcs', confidence: 0.95 },
-        { name: 'tomatoes', quantity: 3, unit: 'pcs', confidence: 0.88 },
-        { name: 'milk', quantity: 500, unit: 'ml', confidence: 0.82 },
-        { name: 'cheese', quantity: 150, unit: 'g', confidence: 0.79 },
-      ],
-      summary: 'Detected: eggs, tomatoes, milk, cheese. Review and edit the list.',
+      data: {
+        items: [
+          { name: 'eggs', quantity: 4, unit: 'pcs', confidence: 0.95 },
+          { name: 'tomatoes', quantity: 3, unit: 'pcs', confidence: 0.88 },
+          { name: 'milk', quantity: 500, unit: 'ml', confidence: 0.82 },
+          { name: 'cheese', quantity: 150, unit: 'g', confidence: 0.79 },
+        ],
+        summary:
+          'Detected: eggs, tomatoes, milk, cheese. Review and edit the list.',
+      },
+      tokensUsed: 0,
     };
   }
 
   async generateRecipes(
     input: RecipeGenerationInput,
-  ): Promise<GeneratedRecipesOutput> {
+  ): Promise<AiResult<GeneratedRecipesOutput>> {
     await this.delay(600);
 
     const locale = input.context.locale;
@@ -94,26 +101,29 @@ export class MockAiProvider implements AiProvider {
       : MOCK_RECIPES.slice(0, 3);
 
     return {
-      recipes: selected.map((recipe) => ({
-        title: recipe.title[locale],
-        description: recipe.description[locale],
-        servings: recipe.servings,
-        timeMinutes: recipe.timeMinutes,
-        difficulty: recipe.difficulty,
-        ingredients: recipe.ingredients.map((ingredient) => ({
-          name: ingredient.name[locale],
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
+      data: {
+        recipes: selected.map((recipe) => ({
+          title: recipe.title[locale],
+          description: recipe.description[locale],
+          servings: recipe.servings,
+          timeMinutes: recipe.timeMinutes,
+          difficulty: recipe.difficulty,
+          ingredients: recipe.ingredients.map((ingredient) => ({
+            name: ingredient.name[locale],
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+          })),
+          steps: recipe.steps[locale],
+          nutrition: recipe.nutrition,
+          tags: request
+            ? [
+                ...recipe.tags[locale],
+                locale === 'de' ? 'auf Anfrage' : 'on request',
+              ]
+            : recipe.tags[locale],
         })),
-        steps: recipe.steps[locale],
-        nutrition: recipe.nutrition,
-        tags: request
-          ? [
-              ...recipe.tags[locale],
-              locale === 'de' ? 'auf Anfrage' : 'on request',
-            ]
-          : recipe.tags[locale],
-      })),
+      },
+      tokensUsed: 0,
     };
   }
 

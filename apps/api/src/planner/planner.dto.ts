@@ -63,3 +63,17 @@ export class ReplaceWeekDto {
   @Type(() => RecipeSnapshotDto)
   meals!: UpsertMealDto[];
 }
+
+/**
+ * Пул рецептов с клиента — сервер собирает из него сбалансированную неделю.
+ */
+export class GenerateWeekDto {
+  @Matches(WEEK_PATTERN, { message: 'week must be YYYY-MM-DD (a Monday)' })
+  week!: string;
+
+  @IsArray()
+  @ArrayMaxSize(60)
+  @ValidateNested({ each: true })
+  @Type(() => RecipeSnapshotDto)
+  recipes!: (RecipeSnapshotDto & { tags?: unknown })[];
+}

@@ -173,6 +173,21 @@ class SuppercookApi {
     );
   }
 
+  /// Сервер собирает сбалансированную неделю из пула рецептов клиента.
+  Future<List<Map<String, dynamic>>> generateWeek({
+    required String week,
+    required List<Map<String, dynamic>> recipes,
+  }) async {
+    final response = await _dio.post<List<dynamic>>(
+      '/planner/generate',
+      data: {'week': week, 'recipes': recipes},
+    );
+    final data = response.data ?? const <dynamic>[];
+    return [
+      for (final item in data) Map<String, dynamic>.from(item as Map),
+    ];
+  }
+
   // ---------------------------------------------------------------------------
   // Saved recipes + cooked history
   // ---------------------------------------------------------------------------

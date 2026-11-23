@@ -71,20 +71,21 @@ export class InventoryController {
     @Body() dto: RecognizePhotoDto,
     @CurrentUser() user: { userId: string },
   ): Promise<RecognitionResult> {
-    await this.quota.consume(user.userId);
-    const result = await this.ai.recognizeIngredients(
+    await this.quota.assertWithinLimit(user.userId);
+    const { data, tokensUsed } = await this.ai.recognizeIngredients(
       dto.imageBase64,
       dto.mimeType ?? 'image/jpeg',
       dto.locale ?? 'en',
     );
+    await this.quota.recordUsage(user.userId, tokensUsed);
     return {
-      items: result.items.map((i) => ({
+      items: data.items.map((i) => ({
         name: i.name,
         quantity: i.quantity,
         unit: i.unit as Unit,
         confidence: i.confidence,
       })),
-      summary: result.summary,
+      summary: data.summary,
     };
   }
 }

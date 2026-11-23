@@ -40,6 +40,26 @@ describe('QuotaService', () => {
     expect(row!.count).toBe(limit);
   });
 
+  it('recordUsage копит токены поверх счётчика генераций', async () => {
+    const userId = randomUUID();
+    await service.recordUsage(userId, 1200);
+    await service.recordUsage(userId, 800);
+
+    const row = await prisma.aiUsage.findFirst({ where: { userId } });
+    expect(row!.count).toBe(2);
+    expect(row!.tokens).toBe(2000);
+  });
+
+  it('assertWithinLimit не списывает генерацию сам по себе', async () => {
+    const userId = randomUUID();
+    for (let i = 0; i < service.dailyLimit; i++) await service.consume(userId);
+
+    // Лимит исчерпан — проверить можно, но списать нельзя
+    await expect(service.assertWithinLimit(userId)).rejects.toThrow('limit');
+    const row = await prisma.aiUsage.findFirst({ where: { userId } });
+    expect(row!.count).toBe(service.dailyLimit);
+  });
+
   it('бросает 429 после исчерпания дневного лимита', async () => {
     const userId = randomUUID();
     const limit = service.dailyLimit;

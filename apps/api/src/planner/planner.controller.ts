@@ -5,11 +5,18 @@ import {
   Delete,
   Get,
   HttpCode,
+  Post,
   Put,
   Query,
 } from '@nestjs/common';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { MEAL_SLOTS, ReplaceWeekDto, UpsertMealDto, WEEK_PATTERN } from './planner.dto';
+import {
+  GenerateWeekDto,
+  MEAL_SLOTS,
+  ReplaceWeekDto,
+  UpsertMealDto,
+  WEEK_PATTERN,
+} from './planner.dto';
 import { PlannerService } from './planner.service';
 
 @Controller('planner')
@@ -45,6 +52,15 @@ export class PlannerController {
     @CurrentUser() user: { userId: string },
   ) {
     return this.planner.replaceWeek(user.userId, dto);
+  }
+
+  /** Собрать сбалансированную неделю из пула рецептов клиента. */
+  @Post('generate')
+  generateWeek(
+    @Body() dto: GenerateWeekDto,
+    @CurrentUser() user: { userId: string },
+  ) {
+    return this.planner.generateWeek(user.userId, dto);
   }
 
   @Delete('meals')
