@@ -81,3 +81,24 @@ final apiShoppingProvider = FutureProvider<List<ShoppingItem>>((ref) async {
   }
   return ref.watch(apiRepositoryProvider).fetchShopping();
 });
+
+/// Live API режим: подтягиваем инвентарь с сервера и добавляем в кладовку
+/// то, чего локально ещё нет (например, добавленное с другого устройства).
+/// Существующие позиции не трогаем — локальные правки не затираются.
+final pantrySyncProvider = FutureProvider<int>((ref) async {
+  final source = ref.watch(dataSourceProvider);
+  if (source == DataSource.demo) return 0;
+
+  final remote = await ref.watch(apiRepositoryProvider).fetchPantry();
+  var added = 0;
+  for (final item in remote) {
+    final alreadyHere = ref
+        .read(pantryProvider)
+        .any((existing) => existing.id == item.id);
+    if (!alreadyHere) {
+      ref.read(pantryProvider.notifier).add(item);
+      added++;
+    }
+  }
+  return added;
+});

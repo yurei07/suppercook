@@ -7,6 +7,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/extensions.dart';
 import '../../../data/models/ingredient.dart';
 import '../../../data/models/localized_text.dart';
+import '../../../data/providers/api_providers.dart';
 import '../../../data/providers/pantry_provider.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/app_buttons.dart';
@@ -81,6 +82,8 @@ class PantryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final items = ref.watch(pantryProvider);
+    // Live API режим: подтягиваем инвентарь сервера в кладовку.
+    ref.watch(pantrySyncProvider);
 
     final grouped = <IngredientCategory, List<Ingredient>>{};
     for (final item in items) {

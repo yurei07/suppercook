@@ -159,6 +159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     await ref.read(dataSourceProvider.notifier).set(source);
     ref.invalidate(suggestionsFeedProvider);
     ref.invalidate(plannerSyncProvider);
+    ref.invalidate(pantrySyncProvider);
     if (source == DataSource.demo) {
       ref.read(remoteRecipesProvider.notifier).clear();
       return;

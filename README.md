@@ -31,7 +31,7 @@ What's still fake or missing:
 - sign-in with Apple/Google isn't there at all (the fake buttons got removed until it's real); the JWT lives in SharedPreferences rather than the system keystore
 - the API persists to a local SQLite file; PostgreSQL is the production target
 - Live API covers recipes, photo recognition, the shopping list and the planner; offline edits made while the API is down are not merged back yet
-- pantry sync with the API is one-way (local → backend) before recipe generation
+- pantry sync is two-way in Live API mode, but the merge is additive: items missing locally are pulled from the server, existing ones are never overwritten
 - community features aren't started
 
 ## Try the Android build
