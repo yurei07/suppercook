@@ -332,6 +332,7 @@
   "navShopping": "Shopping",
   "navProfile": "Profile",
   "createAccount": "Create account",
+  "removeMeal": "Remove meal",
   "authInvalidEmail": "Enter a valid email address",
   "authShortPassword": "Password must be at least 8 characters",
   "authFailed": "Couldn't sign in. Check your email and password.",

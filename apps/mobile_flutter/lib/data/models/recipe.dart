@@ -62,4 +62,68 @@ class Recipe {
   bool get isVegan => tags.contains(RecipeTag.vegan);
   bool get isQuick => tags.contains(RecipeTag.quick);
   bool get isHighProtein => tags.contains(RecipeTag.highProtein);
+
+  /// Полный снимок для сервера (планировщик). Обратим через fromJson —
+  /// план должен восстанавливаться после рестарта без каталога рецептов.
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title.toJson(),
+    'description': description.toJson(),
+    'image': image,
+    'minutes': minutes,
+    'calories': calories,
+    'protein': protein,
+    'carbs': carbs,
+    'fat': fat,
+    'servings': servings,
+    'difficulty': difficulty.name,
+    'tags': [for (final tag in tags) tag.name],
+    'ingredients': [for (final item in ingredients) item.toJson()],
+    'steps': [
+      for (final step in steps)
+        {
+          'title': step.title.toJson(),
+          'body': step.body.toJson(),
+          'timerMinutes': step.timerMinutes,
+        },
+    ],
+  };
+
+  factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
+    id: json['id'] as String? ?? '',
+    title: LocalizedText.fromJson(_map(json['title'])),
+    description: LocalizedText.fromJson(_map(json['description'])),
+    image: json['image'] as String? ?? 'assets/images/food/shared_table.jpg',
+    minutes: (json['minutes'] as num?)?.toInt() ?? 0,
+    calories: (json['calories'] as num?)?.toInt() ?? 0,
+    protein: (json['protein'] as num?)?.toInt() ?? 0,
+    carbs: (json['carbs'] as num?)?.toInt() ?? 0,
+    fat: (json['fat'] as num?)?.toInt() ?? 0,
+    servings: (json['servings'] as num?)?.toInt() ?? 2,
+    difficulty: RecipeDifficulty.values.firstWhere(
+      (value) => value.name == json['difficulty'],
+      orElse: () => RecipeDifficulty.easy,
+    ),
+    tags: RecipeTag.values
+        .where(
+          (value) =>
+              (json['tags'] as List<dynamic>? ?? const []).contains(value.name),
+        )
+        .toList(),
+    ingredients: [
+      for (final item in (json['ingredients'] as List<dynamic>? ?? const []))
+        Ingredient.fromJson(Map<String, dynamic>.from(item as Map)),
+    ],
+    steps: [
+      for (final item in (json['steps'] as List<dynamic>? ?? const []))
+        RecipeStep(
+          title: LocalizedText.fromJson(_map((item as Map)['title'])),
+          body: LocalizedText.fromJson(_map(item['body'])),
+          timerMinutes: (item['timerMinutes'] as num?)?.toInt(),
+        ),
+    ],
+  );
+
+  static Map<String, dynamic> _map(Object? value) =>
+      Map<String, dynamic>.from((value as Map?) ?? const {});
 }

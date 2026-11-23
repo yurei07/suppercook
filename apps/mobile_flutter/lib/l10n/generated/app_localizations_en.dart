@@ -770,6 +770,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createAccount => 'Create account';
 
   @override
+  String get removeMeal => 'Remove meal';
+
+  @override
   String get authInvalidEmail => 'Enter a valid email address';
 
   @override

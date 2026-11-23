@@ -158,6 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Navigator.of(sheetContext).pop();
     await ref.read(dataSourceProvider.notifier).set(source);
     ref.invalidate(suggestionsFeedProvider);
+    ref.invalidate(plannerSyncProvider);
     if (source == DataSource.demo) {
       ref.read(remoteRecipesProvider.notifier).clear();
       return;

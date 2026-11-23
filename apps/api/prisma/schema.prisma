@@ -58,3 +58,20 @@ model AiUsage {
 
   @@unique([userId, day])
 }
+
+// Приём пищи в недельном плане. week — ISO-дата понедельника (YYYY-MM-DD),
+// day 0..6 (пн..вс), slot — breakfast|lunch|dinner. recipeJson — полный
+// снимок рецепта с клиента: план должен рендериться и после рестарта,
+// даже если сам рецепт сгенерирован одноразово и нигде не сохранён.
+model PlannedMeal {
+  id         String @id
+  userId     String
+  week       String
+  day        Int
+  slot       String
+  recipeId   String
+  recipeJson String
+
+  @@unique([userId, week, day, slot])
+  @@index([userId, week])
+}

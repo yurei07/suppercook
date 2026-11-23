@@ -127,4 +127,49 @@ class SuppercookApi {
   Future<void> clearCheckedShopping() async {
     await _dio.delete<dynamic>('/shopping/checked');
   }
+
+  // ---------------------------------------------------------------------------
+  // Weekly planner
+  // ---------------------------------------------------------------------------
+
+  Future<List<Map<String, dynamic>>> fetchPlanner(String week) async {
+    final response = await _dio.get<List<dynamic>>(
+      '/planner',
+      queryParameters: {'week': week},
+    );
+    final data = response.data ?? const <dynamic>[];
+    return [
+      for (final item in data) Map<String, dynamic>.from(item as Map),
+    ];
+  }
+
+  Future<void> upsertPlannerMeal({
+    required String week,
+    required int day,
+    required String slot,
+    required Map<String, dynamic> recipe,
+  }) async {
+    await _dio.put<dynamic>(
+      '/planner/meals',
+      data: {'week': week, 'day': day, 'slot': slot, 'recipe': recipe},
+    );
+  }
+
+  Future<void> replaceWeekPlan({
+    required String week,
+    required List<Map<String, dynamic>> meals,
+  }) async {
+    await _dio.put<dynamic>('/planner', data: {'week': week, 'meals': meals});
+  }
+
+  Future<void> clearPlannerMeal({
+    required String week,
+    required int day,
+    required String slot,
+  }) async {
+    await _dio.delete<dynamic>(
+      '/planner/meals',
+      queryParameters: {'week': week, 'day': day, 'slot': slot},
+    );
+  }
 }

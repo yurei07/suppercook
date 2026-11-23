@@ -776,6 +776,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get createAccount => 'Konto erstellen';
 
   @override
+  String get removeMeal => 'Essen entfernen';
+
+  @override
   String get authInvalidEmail => 'Gib eine gültige E-Mail-Adresse ein';
 
   @override

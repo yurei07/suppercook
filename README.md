@@ -16,6 +16,7 @@ What works today:
 
 - onboarding, profile, diet/allergy preferences and calorie target
 - pantry, smart shopping list and weekly planner, persisted locally
+- the weekly planner syncs with the API in Live API mode (meals push up as full recipe snapshots, so the plan survives restarts)
 - scan flow with camera/gallery on mobile and file upload on desktop
 - recipe list, recipe detail, cooking mode and per-serving macros
 - EN/DE localization with instant switching
@@ -29,7 +30,7 @@ What's still fake or missing:
 - the AI chat answers from a template
 - sign-in with Apple/Google isn't there at all (the fake buttons got removed until it's real); the JWT lives in SharedPreferences rather than the system keystore
 - the API persists to a local SQLite file; PostgreSQL is the production target
-- Live API covers recipes, photo recognition and the shopping list; the planner is still local
+- Live API covers recipes, photo recognition, the shopping list and the planner; offline edits made while the API is down are not merged back yet
 - pantry sync with the API is one-way (local → backend) before recipe generation
 - community features aren't started
 
@@ -126,6 +127,10 @@ A few endpoints you'll probably touch first:
 | PATCH / DELETE | `/inventory/:id` | update / remove |
 | POST | `/inventory/recognize` | photo → ingredient suggestions |
 | POST | `/recipes/suggest` | recipes from the pantry |
+| GET | `/planner?week=YYYY-MM-DD` | meals for the week |
+| PUT | `/planner/meals` | put a recipe into a day slot |
+| PUT | `/planner` | replace the whole week |
+| DELETE | `/planner/meals?week&day&slot` | clear a slot |
 | GET | `/shopping` | shopping list |
 | POST | `/shopping/from-recipe` | add only missing ingredients |
 | PATCH / DELETE | `/shopping/items/:id` | toggle checked / remove |
@@ -165,6 +170,7 @@ The backend currently has 43 tests (auth, quota, services, units, images). The F
 - [x] GitHub Actions CI (API tests, Flutter analyze and tests).
 - [x] Email/password auth with JWT + per-user AI quota and rate limiting.
 - [x] Flutter client: register/sign in with real tokens, sign out in the profile.
+- [x] Planner syncs with the API (recipe snapshots); proper offline merge is still open.
 - [ ] Move the API to PostgreSQL.
 - [ ] Connect OpenAI vision and generation with token cost tracking.
 - [ ] Release keystore and signed builds.

@@ -128,6 +128,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
     final locale = Localizations.localeOf(context).languageCode;
     final recipes = ref.watch(recipesProvider);
     final plan = ref.watch(plannerProvider);
+    // Live API режим: подтягиваем план с сервера и восстанавливаем рецепты.
+    ref.watch(plannerSyncProvider);
     final dayPlan = plan[_selectedDay] ?? const {};
 
     final meals = [
@@ -182,6 +184,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                           style: Theme.of(context).textTheme.labelSmall,
                         ),
                         const Spacer(),
+                        if (dayPlan[meal.$1] != null)
+                          AppIconButton(
+                            icon: Icons.close_rounded,
+                            size: 34,
+                            tooltip: l10n.removeMeal,
+                            onPressed: () => ref
+                                .read(plannerProvider.notifier)
+                                .removeMeal(_selectedDay, meal.$1),
+                          ),
                         AppIconButton(
                           icon: Icons.add_rounded,
                           size: 34,

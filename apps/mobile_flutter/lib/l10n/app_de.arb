@@ -243,6 +243,7 @@
   "navShopping": "Einkauf",
   "navProfile": "Profil",
   "createAccount": "Konto erstellen",
+  "removeMeal": "Essen entfernen",
   "authInvalidEmail": "Gib eine gültige E-Mail-Adresse ein",
   "authShortPassword": "Das Passwort braucht mindestens 8 Zeichen",
   "authFailed": "Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.",

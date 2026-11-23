@@ -1466,6 +1466,12 @@ abstract class AppLocalizations {
   /// **'Create account'**
   String get createAccount;
 
+  /// No description provided for @removeMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove meal'**
+  String get removeMeal;
+
   /// No description provided for @authInvalidEmail.
   ///
   /// In en, this message translates to:

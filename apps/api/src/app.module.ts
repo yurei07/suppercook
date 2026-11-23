@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { HealthModule } from './health/health.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { PlannerModule } from './planner/planner.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { ShoppingModule } from './shopping/shopping.module';
@@ -24,6 +25,7 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 120 };
     AuthModule,
     HealthModule,
     InventoryModule,
+    PlannerModule,
     RecipesModule,
     ShoppingModule,
     AiModule,

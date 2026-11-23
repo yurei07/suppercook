@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 
 import '../models/ingredient.dart';
+import '../models/planned_meal.dart';
 import '../models/recipe.dart';
 import '../models/shopping_item.dart';
 import 'api_mappers.dart';
@@ -145,6 +146,60 @@ class ApiRepository {
   Future<void> removeShoppingItem(String id) => _api.removeShoppingItem(id);
 
   Future<void> clearCheckedShopping() => _api.clearCheckedShopping();
+
+  // ---------------------------------------------------------------------------
+  // Weekly planner — план хранит полные снимки рецептов, чтобы восстановиться
+  // после рестарта без каталога.
+  // ---------------------------------------------------------------------------
+
+  Future<List<PlannedMealSlot>> fetchPlanner(String week) async {
+    try {
+      final meals = await _api.fetchPlanner(week);
+      return [
+        for (final meal in meals)
+          PlannedMealSlot(
+            day: meal['day'] as int? ?? 0,
+            slot: meal['slot'] as String? ?? 'dinner',
+            recipe: Recipe.fromJson(
+              Map<String, dynamic>.from(meal['recipe'] as Map? ?? const {}),
+            ),
+          ),
+      ];
+    } catch (error) {
+      throw ApiException('Could not load the weekly plan', error);
+    }
+  }
+
+  Future<void> upsertPlannerMeal(
+    String week,
+    int day,
+    String slot,
+    Recipe recipe,
+  ) async {
+    await _api.upsertPlannerMeal(
+      week: week,
+      day: day,
+      slot: slot,
+      recipe: recipe.toJson(),
+    );
+  }
+
+  Future<void> replaceWeekPlan(
+    String week,
+    List<(int, String, Recipe)> meals,
+  ) async {
+    await _api.replaceWeekPlan(
+      week: week,
+      meals: [
+        for (final (day, slot, recipe) in meals)
+          {'day': day, 'slot': slot, 'recipe': recipe.toJson()},
+      ],
+    );
+  }
+
+  Future<void> clearPlannerMeal(String week, int day, String slot) async {
+    await _api.clearPlannerMeal(week: week, day: day, slot: slot);
+  }
 
   String _missingString(Ingredient item, Locale locale) {
     final (quantity, unit) = _apiQuantity(item);
