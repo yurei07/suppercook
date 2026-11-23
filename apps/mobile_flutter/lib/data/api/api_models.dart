@@ -172,3 +172,27 @@ class ApiShoppingItem {
         ],
       );
 }
+
+class ApiAuthUser {
+  final String id;
+  final String email;
+
+  const ApiAuthUser({required this.id, required this.email});
+
+  factory ApiAuthUser.fromJson(Map<String, dynamic> json) => ApiAuthUser(
+    id: _asString(json['id']),
+    email: _asString(json['email']),
+  );
+}
+
+class ApiAuthSession {
+  final String token;
+  final ApiAuthUser user;
+
+  const ApiAuthSession({required this.token, required this.user});
+
+  factory ApiAuthSession.fromJson(Map<String, dynamic> json) => ApiAuthSession(
+    token: _asString(json['token']),
+    user: ApiAuthUser.fromJson(_asMap(json['user'] ?? const {})),
+  );
+}

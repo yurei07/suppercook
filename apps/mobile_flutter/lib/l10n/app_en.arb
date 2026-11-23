@@ -330,5 +330,12 @@
   "navPlanner": "Planner",
   "navScan": "Scan",
   "navShopping": "Shopping",
-  "navProfile": "Profile"
+  "navProfile": "Profile",
+  "createAccount": "Create account",
+  "authInvalidEmail": "Enter a valid email address",
+  "authShortPassword": "Password must be at least 8 characters",
+  "authFailed": "Couldn't sign in. Check your email and password.",
+  "emailTaken": "This email is already registered — try signing in instead.",
+  "authNetworkError": "Can't reach the server. Check that the API is running.",
+  "signedOutMessage": "Signed out. Your data stays on this device."
 }

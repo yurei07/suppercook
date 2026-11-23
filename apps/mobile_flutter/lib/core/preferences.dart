@@ -8,6 +8,9 @@ const goalKey = 'user_goal';
 const calorieTargetKey = 'user_calorie_target';
 const recipesCookedKey = 'recipes_cooked';
 const dataSourceKey = 'data_source';
+const authTokenKey = 'auth_token';
+const authUserIdKey = 'auth_user_id';
+const authEmailKey = 'auth_email';
 
 bool isOnboardingComplete(SharedPreferences prefs) =>
     prefs.getBool(onboardingCompleteKey) ?? false;
@@ -26,3 +29,10 @@ String readGoal(SharedPreferences prefs) => prefs.getString(goalKey) ?? 'maintai
 
 int readCalorieTarget(SharedPreferences prefs) =>
     prefs.getInt(calorieTargetKey) ?? 2000;
+
+String? readAuthToken(SharedPreferences prefs) => prefs.getString(authTokenKey);
+
+String? readAuthUserId(SharedPreferences prefs) =>
+    prefs.getString(authUserIdKey);
+
+String? readAuthEmail(SharedPreferences prefs) => prefs.getString(authEmailKey);

@@ -19,6 +19,7 @@ What works today:
 - scan flow with camera/gallery on mobile and file upload on desktop
 - recipe list, recipe detail, cooking mode and per-serving macros
 - EN/DE localization with instant switching
+- email/password accounts: register and sign in against the API, the session token is stored on the device and every Live API request carries it as a Bearer token
 - Live API mode for recipe suggestions, photo recognition and the shopping list (Profile → Data source)
 - mock ingredient recognition and mock AI chat in demo mode
 
@@ -26,7 +27,7 @@ What's still fake or missing:
 
 - photo recognition returns a fixed demo result (Live API or not — the backend uses the mock provider without an OpenAI key)
 - the AI chat answers from a template
-- the API has real email/password accounts with JWT now, but the Flutter login screen is still a stub (it keeps using the legacy `x-user-id` header, which the API still accepts)
+- sign-in with Apple/Google isn't there at all (the fake buttons got removed until it's real); the JWT lives in SharedPreferences rather than the system keystore
 - the API persists to a local SQLite file; PostgreSQL is the production target
 - Live API covers recipes, photo recognition and the shopping list; the planner is still local
 - pantry sync with the API is one-way (local → backend) before recipe generation
@@ -129,7 +130,7 @@ A few endpoints you'll probably touch first:
 | POST | `/shopping/from-recipe` | add only missing ingredients |
 | PATCH / DELETE | `/shopping/items/:id` | toggle checked / remove |
 
-Authentication: send `Authorization: Bearer <jwt>` from `/auth/register` or `/auth/login`. The legacy `x-user-id` header is still accepted while the client migrates. AI endpoints (`/recipes/suggest`, `/inventory/recognize`) have a per-user daily limit (`AI_DAILY_LIMIT`, default 20) and return 429 when it's exhausted; rate limiting is 120 req/min globally and 10 req/min on AI and auth endpoints.
+Authentication: send `Authorization: Bearer <jwt>` from `/auth/register` or `/auth/login`. The legacy `x-user-id` header is still accepted for guests (the app uses it in demo mode). AI endpoints (`/recipes/suggest`, `/inventory/recognize`) have a per-user daily limit (`AI_DAILY_LIMIT`, default 20) and return 429 when it's exhausted; rate limiting is 120 req/min globally and 10 req/min on AI and auth endpoints.
 
 ## Tests
 
@@ -163,7 +164,7 @@ The backend currently has 43 tests (auth, quota, services, units, images). The F
 - [ ] Sync the planner with the API and add proper offline handling.
 - [x] GitHub Actions CI (API tests, Flutter analyze and tests).
 - [x] Email/password auth with JWT + per-user AI quota and rate limiting.
-- [x] Flutter client: switch auth to real tokens and register accounts.
+- [x] Flutter client: register/sign in with real tokens, sign out in the profile.
 - [ ] Move the API to PostgreSQL.
 - [ ] Connect OpenAI vision and generation with token cost tracking.
 - [ ] Release keystore and signed builds.

@@ -1459,6 +1459,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get navProfile;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccount;
+
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get authInvalidEmail;
+
+  /// No description provided for @authShortPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get authShortPassword;
+
+  /// No description provided for @authFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign in. Check your email and password.'**
+  String get authFailed;
+
+  /// No description provided for @emailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered — try signing in instead.'**
+  String get emailTaken;
+
+  /// No description provided for @authNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the server. Check that the API is running.'**
+  String get authNetworkError;
+
+  /// No description provided for @signedOutMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out. Your data stays on this device.'**
+  String get signedOutMessage;
 }
 
 class _AppLocalizationsDelegate

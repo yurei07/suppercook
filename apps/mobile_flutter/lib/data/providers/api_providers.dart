@@ -7,6 +7,7 @@ import '../api/api_repository.dart';
 import '../api/suppercook_api.dart';
 import '../models/recipe.dart';
 import '../models/shopping_item.dart';
+import 'auth_provider.dart';
 import 'data_source_provider.dart';
 import 'pantry_provider.dart';
 import 'recipe_provider.dart';
@@ -15,6 +16,7 @@ import 'user_provider.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final locale = ref.watch(localeProvider);
+  final session = ref.watch(authProvider);
   final dio = Dio(
     BaseOptions(
       baseUrl: ApiConfig.baseUrl,
@@ -22,8 +24,11 @@ final dioProvider = Provider<Dio>((ref) {
       receiveTimeout: const Duration(seconds: 30),
       headers: {
         'Accept': 'application/json',
-        // Keep API inventories separate per language until real auth exists.
-        'x-user-id': 'demo-user-${locale.languageCode}',
+        if (session != null)
+          'Authorization': 'Bearer ${session.token}'
+        else
+          // Гостевой режим: legacy-заголовок, у каждого языка свой набор данных.
+          'x-user-id': 'demo-user-${locale.languageCode}',
         'Accept-Language': locale.languageCode,
       },
     ),

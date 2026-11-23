@@ -241,5 +241,12 @@
   "navPlanner": "Planer",
   "navScan": "Scannen",
   "navShopping": "Einkauf",
-  "navProfile": "Profil"
+  "navProfile": "Profil",
+  "createAccount": "Konto erstellen",
+  "authInvalidEmail": "Gib eine gültige E-Mail-Adresse ein",
+  "authShortPassword": "Das Passwort braucht mindestens 8 Zeichen",
+  "authFailed": "Anmeldung fehlgeschlagen. Prüfe E-Mail und Passwort.",
+  "emailTaken": "Diese E-Mail ist schon registriert – melde dich einfach an.",
+  "authNetworkError": "Server nicht erreichbar. Läuft die API?",
+  "signedOutMessage": "Abgemeldet. Deine Daten bleiben auf diesem Gerät."
 }

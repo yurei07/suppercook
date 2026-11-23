@@ -9,6 +9,7 @@ import '../../../core/app_providers.dart';
 import '../../../core/extensions.dart';
 import '../../../core/locale_controller.dart';
 import '../../../data/providers/api_providers.dart';
+import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/data_source_provider.dart';
 import '../../../data/providers/pantry_provider.dart';
 import '../../../data/providers/planner_provider.dart';
@@ -263,6 +264,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final cooked = ref.watch(recipesCookedProvider);
     final locale = ref.watch(localeProvider);
     final source = ref.watch(dataSourceProvider);
+    final session = ref.watch(authProvider);
     final initial = user.name.trim().isEmpty
         ? 'A'
         : user.name.trim().characters.first.toUpperCase();
@@ -422,11 +424,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         AppInfoRow(
                           icon: Icons.logout_rounded,
                           label: l10n.signOut,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.comingSoonBody)),
-                            );
-                          },
+                          value: session?.email,
+                          onTap: session == null
+                              ? null
+                              : () async {
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .signOut();
+                                  if (!mounted) return;
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(l10n.signedOutMessage),
+                                    ),
+                                  );
+                                },
                         ),
                         const Divider(height: 1),
                         AppInfoRow(

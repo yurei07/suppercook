@@ -765,4 +765,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navProfile => 'Profile';
+
+  @override
+  String get createAccount => 'Create account';
+
+  @override
+  String get authInvalidEmail => 'Enter a valid email address';
+
+  @override
+  String get authShortPassword => 'Password must be at least 8 characters';
+
+  @override
+  String get authFailed => 'Couldn\'t sign in. Check your email and password.';
+
+  @override
+  String get emailTaken =>
+      'This email is already registered — try signing in instead.';
+
+  @override
+  String get authNetworkError =>
+      'Can\'t reach the server. Check that the API is running.';
+
+  @override
+  String get signedOutMessage => 'Signed out. Your data stays on this device.';
 }
